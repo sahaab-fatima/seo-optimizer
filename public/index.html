@@ -59,14 +59,14 @@
                 <h1 class="text-3xl sm:text-4xl lg:text-6xl font-bold mb-4 sm:mb-6 bg-gradient-to-r from-white via-indigo-200 to-emerald-200 bg-clip-text text-transparent leading-tight">Optimize Your Website</h1>
                 <p class="text-base sm:text-xl text-slate-400 mb-6 sm:mb-10 max-w-2xl mx-auto px-2">Get instant SEO audits, AI-powered recommendations, and improve your search rankings.</p>
                 <!-- Home Search Form -->
-                <form @submit.prevent="analyzeUrl()" class="max-w-2xl mx-auto px-2" novalidate>
+                <div class="max-w-2xl mx-auto px-2">
                     <div class="flex flex-col sm:flex-row gap-3">
-                        <input type="text" x-model="urlInput" placeholder="Enter website URL" class="flex-1 px-4 py-3 sm:py-4 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm sm:text-base" required>
-                        <button type="submit" class="px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-indigo-500 to-emerald-500 hover:from-indigo-600 hover:to-emerald-600 rounded-xl font-semibold btn-glow flex items-center justify-center gap-2 text-sm sm:text-base">
+                        <input type="text" x-model="urlInput" placeholder="Enter website URL" class="flex-1 px-4 py-3 sm:py-4 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm sm:text-base">
+                        <button type="button" @click="analyzeUrl()" class="px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-indigo-500 to-emerald-500 hover:from-indigo-600 hover:to-emerald-600 rounded-xl font-semibold btn-glow flex items-center justify-center gap-2 text-sm sm:text-base">
                             <i data-lucide="search" class="w-4 h-4 sm:w-5 sm:h-5"></i>Analyze
                         </button>
                     </div>
-                </form>
+                </div>
             </div>
             <!-- Feature Cards -->
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
@@ -92,14 +92,14 @@
         <div x-show="currentTab==='analyze'" x-cloak class="view-enter">
             <div class="bg-slate-800/50 rounded-2xl border border-slate-700/50 p-4 sm:p-6 mb-4 sm:mb-6">
                 <h2 class="text-lg sm:text-xl font-semibold text-white mb-3 sm:mb-4">Analyze URL</h2>
-                <form @submit.prevent="analyzeUrl()" class="flex flex-col sm:flex-row gap-3" novalidate>
-                    <input type="text" x-model="urlInput" placeholder="Enter URL (e.g., https://example.com)" class="flex-1 px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" required>
-                    <button type="submit" :disabled="isLoading" class="px-6 py-3 bg-gradient-to-r from-indigo-500 to-emerald-500 rounded-xl font-semibold btn-glow flex items-center justify-center gap-2 disabled:opacity-50 text-sm whitespace-nowrap">
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <input type="text" x-model="urlInput" placeholder="Enter URL (e.g., https://example.com)" class="flex-1 px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
+                    <button type="button" @click="analyzeUrl()" :disabled="isLoading" class="px-6 py-3 bg-gradient-to-r from-indigo-500 to-emerald-500 rounded-xl font-semibold btn-glow flex items-center justify-center gap-2 disabled:opacity-50 text-sm whitespace-nowrap">
                         <i x-show="!isLoading" data-lucide="search" class="w-4 h-4 sm:w-5 sm:h-5"></i>
                         <i x-show="isLoading" data-lucide="loader-2" class="w-4 h-4 sm:w-5 sm:h-5 spinner"></i>
                         <span x-text="isLoading ? 'Analyzing...' : 'Analyze'"></span>
                     </button>
-                </form>
+                </div>
             </div>
             <div x-show="error" x-cloak class="bg-red-500/20 border border-red-500/50 rounded-xl p-3 sm:p-4 mb-4 sm:mb-6"><p class="text-red-400 text-sm" x-text="error"></p></div>
             <div x-show="analysisResult" x-cloak class="space-y-4 sm:space-y-6 view-enter">
@@ -153,12 +153,12 @@
                 <h2 class="text-lg sm:text-xl font-semibold text-white mb-3 sm:mb-4">AI Content Optimizer</h2>
                 <textarea x-model="contentInput" placeholder="Paste your content here..." class="w-full h-36 sm:h-48 p-3 sm:p-4 bg-slate-900 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none text-sm"></textarea>
                 <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-3 sm:mt-4">
-                    <button @click="optimizeContent('analyze')" :disabled="isLoading||!contentInput" class="px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-indigo-500 to-emerald-500 rounded-xl font-semibold btn-glow flex items-center justify-center gap-2 disabled:opacity-50 text-sm">
+                    <button type="button" @click="optimizeContent('analyze')" :disabled="isLoading||!contentInput" class="px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-indigo-500 to-emerald-500 rounded-xl font-semibold btn-glow flex items-center justify-center gap-2 disabled:opacity-50 text-sm">
                         <i x-show="!isLoading" data-lucide="sparkles" class="w-4 h-4 sm:w-5 sm:h-5"></i><i x-show="isLoading" data-lucide="loader-2" class="w-4 h-4 sm:w-5 sm:h-5 spinner"></i>
                         <span x-text="isLoading?'Analyzing...':'Analyze SEO'"></span>
                     </button>
-                    <button @click="optimizeContent('meta')" :disabled="isLoading||!contentInput" class="px-4 sm:px-6 py-2.5 sm:py-3 bg-slate-700 hover:bg-slate-600 rounded-xl font-semibold flex items-center justify-center gap-2 disabled:opacity-50 text-sm"><i data-lucide="file-text" class="w-4 h-4 sm:w-5 sm:h-5"></i>Meta Tags</button>
-                    <button @click="optimizeContent('improve')" :disabled="isLoading||!contentInput" class="px-4 sm:px-6 py-2.5 sm:py-3 bg-slate-700 hover:bg-slate-600 rounded-xl font-semibold flex items-center justify-center gap-2 disabled:opacity-50 text-sm"><i data-lucide="wand-2" class="w-4 h-4 sm:w-5 sm:h-5"></i>Improve</button>
+                    <button type="button" @click="optimizeContent('meta')" :disabled="isLoading||!contentInput" class="px-4 sm:px-6 py-2.5 sm:py-3 bg-slate-700 hover:bg-slate-600 rounded-xl font-semibold flex items-center justify-center gap-2 disabled:opacity-50 text-sm"><i data-lucide="file-text" class="w-4 h-4 sm:w-5 sm:h-5"></i>Meta Tags</button>
+                    <button type="button" @click="optimizeContent('improve')" :disabled="isLoading||!contentInput" class="px-4 sm:px-6 py-2.5 sm:py-3 bg-slate-700 hover:bg-slate-600 rounded-xl font-semibold flex items-center justify-center gap-2 disabled:opacity-50 text-sm"><i data-lucide="wand-2" class="w-4 h-4 sm:w-5 sm:h-5"></i>Improve</button>
                 </div>
             </div>
             <div x-show="error" x-cloak class="bg-red-500/20 border border-red-500/50 rounded-xl p-3 sm:p-4 mb-4 sm:mb-6"><p class="text-red-400 text-sm" x-text="error"></p></div>
@@ -174,7 +174,7 @@
                 <h2 class="text-lg sm:text-xl font-semibold text-white mb-3 sm:mb-4">Keyword Research</h2>
                 <div class="flex flex-col sm:flex-row gap-3">
                     <input type="text" x-model="keywordInput" placeholder="Enter a topic (e.g., 'digital marketing')" class="flex-1 px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" @keydown.enter.prevent="researchKeywords()">
-                    <button @click.prevent="researchKeywords()" :disabled="isLoading||!keywordInput" class="px-6 py-3 bg-gradient-to-r from-indigo-500 to-emerald-500 rounded-xl font-semibold btn-glow flex items-center justify-center gap-2 disabled:opacity-50 text-sm whitespace-nowrap">
+                    <button type="button" @click="researchKeywords()" :disabled="isLoading||!keywordInput" class="px-6 py-3 bg-gradient-to-r from-indigo-500 to-emerald-500 rounded-xl font-semibold btn-glow flex items-center justify-center gap-2 disabled:opacity-50 text-sm whitespace-nowrap">
                         <i x-show="!isLoading" data-lucide="search" class="w-4 h-4 sm:w-5 sm:h-5"></i><i x-show="isLoading" data-lucide="loader-2" class="w-4 h-4 sm:w-5 sm:h-5 spinner"></i>
                         <span x-text="isLoading?'Researching...':'Research'"></span>
                     </button>
