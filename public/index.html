@@ -173,8 +173,8 @@
             <div class="bg-slate-800/50 rounded-2xl border border-slate-700/50 p-4 sm:p-6 mb-4 sm:mb-6">
                 <h2 class="text-lg sm:text-xl font-semibold text-white mb-3 sm:mb-4">Keyword Research</h2>
                 <div class="flex flex-col sm:flex-row gap-3">
-                    <input type="text" x-model="keywordInput" placeholder="Enter a topic (e.g., 'digital marketing')" class="flex-1 px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" @keydown.enter="researchKeywords()">
-                    <button @click="researchKeywords()" :disabled="isLoading||!keywordInput" class="px-6 py-3 bg-gradient-to-r from-indigo-500 to-emerald-500 rounded-xl font-semibold btn-glow flex items-center justify-center gap-2 disabled:opacity-50 text-sm whitespace-nowrap">
+                    <input type="text" x-model="keywordInput" placeholder="Enter a topic (e.g., 'digital marketing')" class="flex-1 px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" @keydown.enter.prevent="researchKeywords()">
+                    <button @click.prevent="researchKeywords()" :disabled="isLoading||!keywordInput" class="px-6 py-3 bg-gradient-to-r from-indigo-500 to-emerald-500 rounded-xl font-semibold btn-glow flex items-center justify-center gap-2 disabled:opacity-50 text-sm whitespace-nowrap">
                         <i x-show="!isLoading" data-lucide="search" class="w-4 h-4 sm:w-5 sm:h-5"></i><i x-show="isLoading" data-lucide="loader-2" class="w-4 h-4 sm:w-5 sm:h-5 spinner"></i>
                         <span x-text="isLoading?'Researching...':'Research'"></span>
                     </button>
