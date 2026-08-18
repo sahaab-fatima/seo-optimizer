@@ -59,9 +59,9 @@ function seoApp() {
       try { new URL(url); } catch { this.error = 'Please enter a valid URL'; return; }
 
       this.currentTab = 'analyze';
-      this.isLoading = true; this.error = ''; this.analysisResult = null; this.showHtmlFallback = false;
+      this.isLoading = true; this.error = ''; this.analysisResult = null;
 
-      // Step 1: Google PageSpeed Insights API
+      // Step 1: Google PageSpeed Insights API (works for ANY public URL)
       try {
         const psiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&category=seo&strategy=mobile`;
         const res = await fetch(psiUrl);
@@ -77,7 +77,7 @@ function seoApp() {
         }
       } catch (e) {}
 
-      // Step 2: CORS proxy
+      // Step 2: CORS proxy fallback
       try {
         const proxies = [
           `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
@@ -100,8 +100,7 @@ function seoApp() {
         }
       } catch (e) {}
 
-      // Step 3: Show error with retry
-      this.error = 'Could not analyze this URL. Try a simpler site like github.com or wikipedia.org, or try again in a few seconds.';
+      this.error = 'Could not analyze this URL. Try again in a few seconds or try a different URL.';
       this.isLoading = false;
       this.$nextTick(() => { lucide.createIcons() });
     },
