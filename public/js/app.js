@@ -5,6 +5,7 @@ function seoApp() {
     currentTab: 'home',
     urlInput: '',
     htmlInput: '',
+    showHtmlFallback: false,
     contentInput: '',
     keywordInput: '',
     isLoading: false,
@@ -60,7 +61,7 @@ function seoApp() {
       try { new URL(url); } catch { this.error = 'Please enter a valid URL'; return; }
 
       this.currentTab = 'analyze';
-      this.isLoading = true; this.error = ''; this.analysisResult = null;
+      this.isLoading = true; this.error = ''; this.analysisResult = null; this.showHtmlFallback = false;
 
       try {
         const body = { url };
@@ -74,9 +75,21 @@ function seoApp() {
         const data = await res.json();
         if (!res.ok || data.error) throw new Error(data.error || 'Analysis failed');
 
+        // If server returned blocked=true, show fallback
+        if (data.data.blocked) {
+          this.showHtmlFallback = true;
+          this.error = '';
+          this.isLoading = false;
+          this.$nextTick(() => { lucide.createIcons() });
+          return;
+        }
+
         this.analysisResult = data.data;
         this.saveToHistory({ url, score: data.data.score, createdAt: new Date().toISOString() });
-      } catch (err) { this.error = err.message || 'Failed to analyze URL. Try a different website.'; }
+      } catch (err) {
+        this.showHtmlFallback = true;
+        this.error = '';
+      }
       this.isLoading = false;
       this.$nextTick(() => { lucide.createIcons() });
     },
