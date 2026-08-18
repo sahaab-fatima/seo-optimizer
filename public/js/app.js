@@ -178,9 +178,6 @@ function seoApp() {
 
       return { url, score: Math.max(0, Math.min(100, score)), issues, stats: { titleLength: title.length, metaDescLength: metaDesc.length, h1Count: h1.length, h2Count: h2.length, linkCount: links.length, imageCount: images.length, imagesWithoutAlt, wordCount }, recommendations: recs };
     },
-      this.isLoading = false;
-      this.$nextTick(() => { lucide.createIcons() });
-    },
 
     // Content Optimization - local
     optimizeContent(type) {
