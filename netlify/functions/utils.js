@@ -2,57 +2,85 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 
 async function scrapeUrl(url) {
-  const response = await axios.get(url, {
-    headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
-    timeout: 5000
-  });
-  const $ = cheerio.load(response.data);
-  $('script, style, noscript, iframe').remove();
+  try {
+    const response = await axios.get(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.5',
+        'Accept-Encoding': 'gzip, deflate',
+        'Connection': 'keep-alive',
+        'Upgrade-Insecure-Requests': '1'
+      },
+      timeout: 8000,
+      maxRedirects: 5
+    });
+    const $ = cheerio.load(response.data);
+    $('script, style, noscript, iframe').remove();
 
-  const title = $('title').text().trim();
-  const metaDescription = $('meta[name="description"]').attr('content') || '';
-  const metaKeywords = $('meta[name="keywords"]').attr('content') || '';
-  const canonical = $('link[rel="canonical"]').attr('href') || '';
-  const robots = $('meta[name="robots"]').attr('content') || '';
-  const ogTitle = $('meta[property="og:title"]').attr('content') || '';
-  const ogDescription = $('meta[property="og:description"]').attr('content') || '';
-  const ogImage = $('meta[property="og:image"]').attr('content') || '';
+    const title = $('title').text().trim();
+    const metaDescription = $('meta[name="description"]').attr('content') || '';
+    const metaKeywords = $('meta[name="keywords"]').attr('content') || '';
+    const canonical = $('link[rel="canonical"]').attr('href') || '';
+    const robots = $('meta[name="robots"]').attr('content') || '';
+    const ogTitle = $('meta[property="og:title"]').attr('content') || '';
+    const ogDescription = $('meta[property="og:description"]').attr('content') || '';
+    const ogImage = $('meta[property="og:image"]').attr('content') || '';
 
-  const h1 = [], h2 = [], h3 = [];
-  $('h1').each((_, el) => { const t = $(el).text().trim(); if (t) h1.push(t); });
-  $('h2').each((_, el) => { const t = $(el).text().trim(); if (t) h2.push(t); });
-  $('h3').each((_, el) => { const t = $(el).text().trim(); if (t) h3.push(t); });
+    const h1 = [], h2 = [], h3 = [];
+    $('h1').each((_, el) => { const t = $(el).text().trim(); if (t) h1.push(t); });
+    $('h2').each((_, el) => { const t = $(el).text().trim(); if (t) h2.push(t); });
+    $('h3').each((_, el) => { const t = $(el).text().trim(); if (t) h3.push(t); });
 
-  const links = [];
-  const baseDomain = new URL(url).hostname;
-  $('a[href]').each((_, el) => {
-    const href = $(el).attr('href') || '';
-    const text = $(el).text().trim();
-    if (href && !href.startsWith('#') && !href.startsWith('javascript:')) {
-      let fullHref = href;
-      if (href.startsWith('/')) { fullHref = new URL(url).origin + href; }
-      let isExternal = false;
-      try { isExternal = new URL(fullHref).hostname !== baseDomain; } catch {}
-      links.push({ text: text.substring(0, 100), href: fullHref, isExternal });
-    }
-  });
+    const links = [];
+    const baseDomain = new URL(url).hostname;
+    $('a[href]').each((_, el) => {
+      const href = $(el).attr('href') || '';
+      const text = $(el).text().trim();
+      if (href && !href.startsWith('#') && !href.startsWith('javascript:')) {
+        let fullHref = href;
+        if (href.startsWith('/')) { fullHref = new URL(url).origin + href; }
+        let isExternal = false;
+        try { isExternal = new URL(fullHref).hostname !== baseDomain; } catch {}
+        links.push({ text: text.substring(0, 100), href: fullHref, isExternal });
+      }
+    });
 
-  const images = [];
-  $('img').each((_, el) => {
-    const src = $(el).attr('src') || '';
-    const alt = $(el).attr('alt') || '';
-    if (src) images.push({ src, alt });
-  });
+    const images = [];
+    $('img').each((_, el) => {
+      const src = $(el).attr('src') || '';
+      const alt = $(el).attr('alt') || '';
+      if (src) images.push({ src, alt });
+    });
 
-  const textContent = $('body').text().replace(/\s+/g, ' ').trim();
-  const wordCount = textContent.split(/\s+/).filter(w => w.length > 0).length;
+    const textContent = $('body').text().replace(/\s+/g, ' ').trim();
+    const wordCount = textContent.split(/\s+/).filter(w => w.length > 0).length;
 
-  return { url, title, metaDescription, metaKeywords, h1, h2, h3, links, images, textContent: textContent.substring(0, 10000), canonical, ogTitle, ogDescription, ogImage, robots, wordCount };
+    return { url, title, metaDescription, metaKeywords, h1, h2, h3, links, images, textContent: textContent.substring(0, 10000), canonical, ogTitle, ogDescription, ogImage, robots, wordCount };
+  } catch (scrapeErr) {
+    // If scraping fails, return basic data from URL
+    console.warn('Scrape failed:', scrapeErr.message);
+    let hostname = '';
+    try { hostname = new URL(url).hostname; } catch {}
+    return {
+      url, title: '', metaDescription: '', metaKeywords: '',
+      h1: [], h2: [], h3: [], links: [], images: [],
+      textContent: '', canonical: '', ogTitle: '', ogDescription: '', ogImage: '',
+      robots: '', wordCount: 0, scrapeError: scrapeErr.message
+    };
+  }
 }
 
 function analyzeSEO(data) {
   const issues = [];
   let score = 100;
+
+  // If scraping failed, give a basic report
+  if (data.scrapeError) {
+    issues.push({ type: 'error', category: 'Access', message: `Could not access website: ${data.scrapeError.substring(0, 80)}`, suggestion: 'The website may be blocking automated access. Try a different URL or check if the site is online.' });
+    score = 30;
+    return { url: data.url, score, issues, stats: { titleLength: 0, metaDescLength: 0, h1Count: 0, h2Count: 0, linkCount: 0, externalLinkCount: 0, imageCount: 0, imagesWithoutAlt: 0, wordCount: 0 }, recommendations: ['Try a publicly accessible website like github.com or wikipedia.org'] };
+  }
 
   if (!data.title) { issues.push({ type: 'error', category: 'Title', message: 'Missing page title', suggestion: 'Add a descriptive title between 50-60 characters' }); score -= 20; }
   else if (data.title.length < 30) { issues.push({ type: 'warning', category: 'Title', message: `Title is too short (${data.title.length} characters)`, suggestion: 'Aim for 50-60 characters' }); score -= 10; }
