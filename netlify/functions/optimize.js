@@ -1,5 +1,3 @@
-const { connectDB, Content } = require('./db');
-
 exports.handler = async (event) => {
   const headers = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Content-Type', 'Access-Control-Allow-Methods': 'POST, OPTIONS' };
   if (event.httpMethod === 'OPTIONS') return { statusCode: 200, headers, body: '' };
@@ -9,12 +7,10 @@ exports.handler = async (event) => {
     const { content, type } = JSON.parse(event.body);
     if (!content) return { statusCode: 400, headers, body: JSON.stringify({ error: 'Content is required' }) };
 
-    // Local analysis (fast + reliable)
     const wordCount = content.split(/\s+/).filter(w => w.length > 0).length;
     const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 0).length;
     const avgWordsPerSentence = sentences > 0 ? Math.round(wordCount / sentences) : 0;
 
-    // Extract common words for keywords
     const stopWords = new Set(['the','a','an','is','are','was','were','be','been','being','have','has','had','do','does','did','will','would','could','should','may','might','can','shall','to','of','in','for','on','with','at','by','from','as','into','through','during','before','after','above','below','between','out','off','over','under','again','further','then','once','here','there','when','where','why','how','all','both','each','few','more','most','other','some','such','no','not','only','own','same','so','than','too','very','just','because','but','and','or','if','while','about','up','its','it','this','that','these','those','i','me','my','we','our','you','your','he','him','his','she','her','they','them','their','what','which','who','whom']);
     const words = content.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter(w => w.length > 3 && !stopWords.has(w));
     const wordFreq = {};
@@ -26,25 +22,14 @@ exports.handler = async (event) => {
     if (type === 'meta') {
       const title = content.split('.')[0].substring(0, 55).trim() || 'Optimized Page Title';
       const desc = content.substring(0, 150).trim() + '...';
-      result = {
-        title: title,
-        description: desc,
-        keywords: topWords.length > 0 ? topWords : ['seo', 'content', 'optimization']
-      };
+      result = { title, description: desc, keywords: topWords.length > 0 ? topWords : ['seo', 'content', 'optimization'] };
     } else if (type === 'improve') {
-      const score = Math.min(95, Math.max(25, 
-        (wordCount > 200 ? 20 : 10) + 
-        (wordCount > 500 ? 15 : 0) + 
-        (sentences > 5 ? 10 : 5) + 
-        (avgWordsPerSentence < 25 ? 15 : 5) + 
-        (topWords.length > 3 ? 15 : 5) +
-        20
-      ));
+      const score = Math.min(95, Math.max(25, (wordCount > 200 ? 20 : 10) + (wordCount > 500 ? 15 : 0) + (sentences > 5 ? 10 : 5) + (avgWordsPerSentence < 25 ? 15 : 5) + (topWords.length > 3 ? 15 : 5) + 20));
       result = {
-        score: score,
+        score,
         suggestions: [
           wordCount < 300 ? 'Increase content to at least 300 words' : 'Good content length',
-          avgWordsPerSentence > 25 ? 'Shorten your sentences for better readability' : 'Good sentence length',
+          avgWordsPerSentence > 25 ? 'Shorten sentences for readability' : 'Good sentence length',
           topWords.length < 3 ? 'Add more relevant keywords' : 'Good keyword usage',
           'Add a compelling title tag (50-60 characters)',
           'Write a meta description (150-160 characters)',
@@ -53,13 +38,7 @@ exports.handler = async (event) => {
         optimizedVersion: content
       };
     } else {
-      const score = Math.min(95, Math.max(25, 
-        (wordCount > 200 ? 20 : 10) + 
-        (wordCount > 500 ? 15 : 0) + 
-        (sentences > 5 ? 10 : 5) + 
-        (topWords.length > 3 ? 15 : 5) +
-        25
-      ));
+      const score = Math.min(95, Math.max(25, (wordCount > 200 ? 20 : 10) + (wordCount > 500 ? 15 : 0) + (sentences > 5 ? 10 : 5) + (topWords.length > 3 ? 15 : 5) + 25));
       result = {
         overallScore: score,
         strengths: [
@@ -68,8 +47,8 @@ exports.handler = async (event) => {
           sentences > 3 ? 'Good content structure' : 'Content exists'
         ],
         weaknesses: [
-          wordCount < 300 ? 'Content is too short - aim for 300+ words' : null,
-          avgWordsPerSentence > 25 ? 'Sentences are too long - keep under 20 words' : null,
+          wordCount < 300 ? 'Content too short - aim for 300+ words' : null,
+          avgWordsPerSentence > 25 ? 'Sentences too long - keep under 20 words' : null,
           topWords.length < 3 ? 'Not enough keyword variety' : null
         ].filter(Boolean),
         recommendations: [
@@ -82,11 +61,6 @@ exports.handler = async (event) => {
         ]
       };
     }
-
-    // DB save - fire and forget
-    connectDB().then(db => {
-      if (db) new Content({ originalContent: content.substring(0, 500), type, result }).save().catch(() => {});
-    }).catch(() => {});
 
     return { statusCode: 200, headers, body: JSON.stringify({ success: true, data: result }) };
   } catch (error) {

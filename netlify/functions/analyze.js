@@ -1,4 +1,3 @@
-const { connectDB, Analysis } = require('./db');
 const { scrapeUrl, analyzeSEO } = require('./utils');
 
 exports.handler = async (event) => {
@@ -14,17 +13,9 @@ exports.handler = async (event) => {
     const scrapedData = await scrapeUrl(url);
     const analysis = analyzeSEO(scrapedData);
 
-    try {
-      const db = await connectDB();
-      if (db) {
-        const saved = new Analysis(analysis);
-        await saved.save();
-      }
-    } catch (dbErr) { console.warn('DB save failed:', dbErr.message); }
-
     return { statusCode: 200, headers, body: JSON.stringify({ success: true, data: { scraped: scrapedData, analysis } }) };
   } catch (error) {
-    console.error('Analysis error:', error);
+    console.error('Analysis error:', error.message);
     return { statusCode: 500, headers, body: JSON.stringify({ error: error.message || 'Failed to analyze URL' }) };
   }
 };

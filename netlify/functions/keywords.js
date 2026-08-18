@@ -1,5 +1,3 @@
-const { connectDB, Keyword } = require('./db');
-
 exports.handler = async (event) => {
   const headers = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Content-Type', 'Access-Control-Allow-Methods': 'POST, OPTIONS' };
   if (event.httpMethod === 'OPTIONS') return { statusCode: 200, headers, body: '' };
@@ -9,7 +7,6 @@ exports.handler = async (event) => {
     const { topic, count = 10 } = JSON.parse(event.body);
     if (!topic) return { statusCode: 400, headers, body: JSON.stringify({ error: 'Topic is required' }) };
 
-    // Always use local generation (fast + reliable)
     const t = topic.toLowerCase().trim();
     const result = {
       keywords: [
@@ -39,11 +36,6 @@ exports.handler = async (event) => {
         `How to improve ${t}?`
       ]
     };
-
-    // DB save - fire and forget
-    connectDB().then(db => {
-      if (db) new Keyword({ topic, ...result }).save().catch(() => {});
-    }).catch(() => {});
 
     return { statusCode: 200, headers, body: JSON.stringify({ success: true, data: result }) };
   } catch (error) {

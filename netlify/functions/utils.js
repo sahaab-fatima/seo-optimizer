@@ -12,7 +12,7 @@ async function scrapeUrl(url) {
         'Connection': 'keep-alive',
         'Upgrade-Insecure-Requests': '1'
       },
-      timeout: 8000,
+      timeout: 5000,
       maxRedirects: 5
     });
     const $ = cheerio.load(response.data);
