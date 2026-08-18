@@ -10,10 +10,14 @@ exports.handler = async (event) => {
     if (!topic) return { statusCode: 400, headers, body: JSON.stringify({ error: 'Topic is required' }) };
 
     const OpenAI = require('openai');
-    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY, baseURL: process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1' });
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+      baseURL: process.env.OPENAI_BASE_URL || 'https://api.xiaomimimo.com/v1',
+      timeout: 15000
+    });
 
     const completion = await openai.chat.completions.create({
-      model: 'mimo-v2.5',
+      model: 'mimo-v2-flash',
       messages: [
         { role: 'system', content: 'You are a keyword research expert. Return JSON with: keywords (array of {keyword, searchVolume: high/medium/low, difficulty: high/medium/low, relevance: 0-100}), longTailKeywords (array), questions (array). Only return valid JSON.' },
         { role: 'user', content: `Generate ${count} keyword ideas for: "${topic}"` }

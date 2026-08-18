@@ -10,7 +10,11 @@ exports.handler = async (event) => {
     if (!content) return { statusCode: 400, headers, body: JSON.stringify({ error: 'Content is required' }) };
 
     const OpenAI = require('openai');
-    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY, baseURL: process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1' });
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+      baseURL: process.env.OPENAI_BASE_URL || 'https://api.xiaomimimo.com/v1',
+      timeout: 15000
+    });
 
     let systemPrompt = '';
     if (type === 'meta') {
@@ -22,7 +26,7 @@ exports.handler = async (event) => {
     }
 
     const completion = await openai.chat.completions.create({
-      model: 'mimo-v2.5',
+      model: 'mimo-v2-flash',
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: `Analyze this content:\n\n${content.substring(0, 3000)}` }
