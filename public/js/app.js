@@ -63,35 +63,120 @@ function seoApp() {
       this.currentTab = 'analyze';
       this.isLoading = true; this.error = ''; this.analysisResult = null; this.showHtmlFallback = false;
 
+      // If user pasted HTML, send directly
+      if (this.htmlInput && this.htmlInput.trim().length > 50) {
+        try {
+          const res = await fetch('/.netlify/functions/analyze', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url, html: this.htmlInput.trim() }) });
+          const data = await res.json();
+          if (data.data && data.data.score !== undefined) {
+            this.analysisResult = data.data;
+            this.saveToHistory({ url, score: data.data.score, createdAt: new Date().toISOString() });
+            this.isLoading = false;
+            this.$nextTick(() => { lucide.createIcons() });
+            return;
+          }
+        } catch (e) {}
+        // If function fails, analyze client-side
+        this.analysisResult = this.analyzeHtmlLocal(this.htmlInput.trim(), url);
+        this.saveToHistory({ url, score: this.analysisResult.score, createdAt: new Date().toISOString() });
+        this.isLoading = false;
+        this.$nextTick(() => { lucide.createIcons() });
+        return;
+      }
+
+      // Step 1: Try CORS proxy (client-side)
       try {
-        const body = { url };
-        if (this.htmlInput && this.htmlInput.trim().length > 50) body.html = this.htmlInput.trim();
+        const proxies = [
+          `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+          `https://corsproxy.io/?${encodeURIComponent(url)}`
+        ];
+        for (const proxyUrl of proxies) {
+          try {
+            const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(8000) });
+            if (res.ok) {
+              const html = await res.text();
+              if (html && html.length > 100) {
+                this.analysisResult = this.analyzeHtmlLocal(html, url);
+                this.saveToHistory({ url, score: this.analysisResult.score, createdAt: new Date().toISOString() });
+                this.isLoading = false;
+                this.$nextTick(() => { lucide.createIcons() });
+                return;
+              }
+            }
+          } catch (e) { continue; }
+        }
+      } catch (e) {}
 
-        const res = await fetch('/.netlify/functions/analyze', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body)
-        });
+      // Step 2: Try Netlify function (server-side)
+      try {
+        const res = await fetch('/.netlify/functions/analyze', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url }) });
         const data = await res.json();
-
-        if (data.data && data.data.blocked) {
-          this.showHtmlFallback = true;
+        if (data.data && !data.data.blocked && data.data.score !== undefined) {
+          this.analysisResult = data.data;
+          this.saveToHistory({ url, score: data.data.score, createdAt: new Date().toISOString() });
           this.isLoading = false;
           this.$nextTick(() => { lucide.createIcons() });
           return;
         }
+      } catch (e) {}
 
-        if (data.data && data.data.score !== undefined) {
-          this.analysisResult = data.data;
-          this.saveToHistory({ url, score: data.data.score, createdAt: new Date().toISOString() });
-        } else {
-          this.showHtmlFallback = true;
-        }
-      } catch (err) {
-        this.showHtmlFallback = true;
-      }
+      // Step 3: All failed - show HTML paste fallback
+      this.showHtmlFallback = true;
       this.isLoading = false;
       this.$nextTick(() => { lucide.createIcons() });
+    },
+
+    // Local HTML analyzer (client-side)
+    analyzeHtmlLocal(html, url) {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+      const title = doc.querySelector('title')?.textContent?.trim() || '';
+      const metaDesc = doc.querySelector('meta[name="description"]')?.getAttribute('content') || '';
+      const canonical = doc.querySelector('link[rel="canonical"]')?.getAttribute('href') || '';
+      const ogTitle = doc.querySelector('meta[property="og:title"]')?.getAttribute('content') || '';
+      const ogDesc = doc.querySelector('meta[property="og:description"]')?.getAttribute('content') || '';
+      const ogImage = doc.querySelector('meta[property="og:image"]')?.getAttribute('content') || '';
+      const h1 = [...doc.querySelectorAll('h1')].map(el => el.textContent.trim()).filter(Boolean);
+      const h2 = [...doc.querySelectorAll('h2')].map(el => el.textContent.trim()).filter(Boolean);
+      const images = [...doc.querySelectorAll('img')].map(el => ({ src: el.getAttribute('src') || '', alt: el.getAttribute('alt') || '' }));
+      const baseDomain = new URL(url).hostname;
+      const links = [...doc.querySelectorAll('a[href]')].map(el => {
+        const href = el.getAttribute('href') || '';
+        const text = el.textContent.trim().substring(0, 100);
+        if (!href || href.startsWith('#') || href.startsWith('javascript:')) return null;
+        let fullHref = href;
+        try { if (href.startsWith('/')) fullHref = new URL(url).origin + href; } catch {}
+        let isExternal = false;
+        try { isExternal = new URL(fullHref).hostname !== baseDomain; } catch {}
+        return { text, href: fullHref, isExternal };
+      }).filter(Boolean);
+      const textContent = doc.body?.textContent?.replace(/\s+/g, ' ').trim() || '';
+      const wordCount = textContent.split(/\s+/).filter(w => w.length > 0).length;
+      const imagesWithoutAlt = images.filter(img => !img.alt).length;
+
+      const issues = [];
+      let score = 100;
+      if (!title) { issues.push({ type: 'error', category: 'Title', message: 'Missing page title', suggestion: 'Add a descriptive title between 50-60 characters' }); score -= 20; }
+      else if (title.length < 30) { issues.push({ type: 'warning', category: 'Title', message: `Title too short (${title.length} chars)`, suggestion: 'Aim for 50-60 characters' }); score -= 10; }
+      else if (title.length > 60) { issues.push({ type: 'warning', category: 'Title', message: `Title too long (${title.length} chars)`, suggestion: 'Keep under 60 characters' }); score -= 5; }
+      if (!metaDesc) { issues.push({ type: 'error', category: 'Meta Description', message: 'Missing meta description', suggestion: 'Add a compelling description 150-160 chars' }); score -= 15; }
+      else if (metaDesc.length < 120) { issues.push({ type: 'warning', category: 'Meta Description', message: `Too short (${metaDesc.length} chars)`, suggestion: 'Aim for 150-160 characters' }); score -= 5; }
+      if (h1.length === 0) { issues.push({ type: 'error', category: 'Headings', message: 'No H1 tag found', suggestion: 'Add exactly one H1 tag' }); score -= 15; }
+      else if (h1.length > 1) { issues.push({ type: 'warning', category: 'Headings', message: `Multiple H1 tags (${h1.length})`, suggestion: 'Use only one H1 per page' }); score -= 5; }
+      if (h2.length === 0 && h1.length > 0) { issues.push({ type: 'info', category: 'Headings', message: 'No H2 tags found', suggestion: 'Add H2 tags to organize content' }); score -= 3; }
+      if (imagesWithoutAlt > 0) { issues.push({ type: 'warning', category: 'Images', message: `${imagesWithoutAlt} image(s) missing alt text`, suggestion: 'Add descriptive alt text' }); score -= Math.min(imagesWithoutAlt * 2, 10); }
+      if (!ogTitle) { issues.push({ type: 'info', category: 'Social', message: 'Missing og:title', suggestion: 'Add for better social sharing' }); score -= 2; }
+      if (!ogDesc) { issues.push({ type: 'info', category: 'Social', message: 'Missing og:description', suggestion: 'Add for social previews' }); score -= 2; }
+      if (!canonical) { issues.push({ type: 'info', category: 'Technical', message: 'No canonical URL', suggestion: 'Add canonical link' }); score -= 3; }
+      if (wordCount < 300) { issues.push({ type: 'warning', category: 'Content', message: `Low word count (${wordCount})`, suggestion: 'Aim for at least 300 words' }); score -= 5; }
+
+      const recs = [];
+      if (h1.length > 0) recs.push('H1 tag present');
+      if (wordCount > 500) recs.push('Good content length');
+      if (metaDesc) recs.push('Meta description present');
+      if (title) recs.push('Title tag present');
+
+      return { url, score: Math.max(0, Math.min(100, score)), issues, stats: { titleLength: title.length, metaDescLength: metaDesc.length, h1Count: h1.length, h2Count: h2.length, linkCount: links.length, imageCount: images.length, imagesWithoutAlt, wordCount }, recommendations: recs };
     },
       this.isLoading = false;
       this.$nextTick(() => { lucide.createIcons() });
