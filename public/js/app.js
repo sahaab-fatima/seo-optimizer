@@ -62,10 +62,22 @@ function seoApp() {
       this.isLoading = true; this.error = ''; this.analysisResult = null;
 
       try {
-        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
-        const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(10000) });
-        if (!res.ok) throw new Error('Could not fetch website');
-        const html = await res.text();
+        // Try multiple CORS proxies
+        const proxies = [
+          `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+          `https://corsproxy.io/?${encodeURIComponent(url)}`,
+          `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`
+        ];
+        
+        let html = '';
+        let lastError;
+        for (const proxyUrl of proxies) {
+          try {
+            const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(8000) });
+            if (res.ok) { html = await res.text(); break; }
+          } catch (e) { lastError = e; }
+        }
+        if (!html) throw new Error('Could not fetch website. It may be blocking automated access.');
 
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, 'text/html');
