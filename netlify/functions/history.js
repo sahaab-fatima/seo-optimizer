@@ -5,7 +5,9 @@ exports.handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') return { statusCode: 200, headers, body: '' };
 
   try {
-    await connectDB();
+    const db = await connectDB();
+    if (!db) return { statusCode: 200, headers, body: JSON.stringify({ success: true, data: [] }) };
+
     const path = event.path.split('/').pop();
 
     let data;

@@ -4,9 +4,21 @@ let cached = null;
 
 async function connectDB() {
   if (cached && mongoose.connection.readyState === 1) return cached;
-  await mongoose.connect(process.env.MONGODB_URI);
-  cached = mongoose;
-  return cached;
+  if (!process.env.MONGODB_URI) {
+    console.warn('MONGODB_URI not set, skipping DB');
+    return null;
+  }
+  try {
+    await Promise.race([
+      mongoose.connect(process.env.MONGODB_URI, { serverSelectionTimeoutMS: 5000, connectTimeoutMS: 5000 }),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('DB connect timeout')), 8000))
+    ]);
+    cached = mongoose;
+    return cached;
+  } catch (err) {
+    console.warn('DB connection failed:', err.message);
+    return null;
+  }
 }
 
 const analysisSchema = new mongoose.Schema({

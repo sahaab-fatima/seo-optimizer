@@ -11,11 +11,16 @@ exports.handler = async (event) => {
     if (!url) return { statusCode: 400, headers, body: JSON.stringify({ error: 'URL is required' }) };
     try { new URL(url); } catch { return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid URL format' }) }; }
 
-    await connectDB();
     const scrapedData = await scrapeUrl(url);
     const analysis = analyzeSEO(scrapedData);
-    const saved = new Analysis(analysis);
-    await saved.save();
+
+    try {
+      const db = await connectDB();
+      if (db) {
+        const saved = new Analysis(analysis);
+        await saved.save();
+      }
+    } catch (dbErr) { console.warn('DB save failed:', dbErr.message); }
 
     return { statusCode: 200, headers, body: JSON.stringify({ success: true, data: { scraped: scrapedData, analysis } }) };
   } catch (error) {

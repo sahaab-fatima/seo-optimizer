@@ -27,9 +27,13 @@ exports.handler = async (event) => {
     const jsonMatch = responseText.match(/\{[\s\S]*\}/);
     if (jsonMatch) { result = JSON.parse(jsonMatch[0]); } else { result = { keywords: [], longTailKeywords: [], questions: [] }; }
 
-    await connectDB();
-    const saved = new Keyword({ topic, ...result });
-    await saved.save();
+    try {
+      const db = await connectDB();
+      if (db) {
+        const saved = new Keyword({ topic, ...result });
+        await saved.save();
+      }
+    } catch (dbErr) { console.warn('DB save failed:', dbErr.message); }
 
     return { statusCode: 200, headers, body: JSON.stringify({ success: true, data: result }) };
   } catch (error) {
