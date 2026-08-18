@@ -51,7 +51,7 @@ function seoApp() {
       localStorage.setItem('seo_history', JSON.stringify(this.history));
     },
 
-    // URL Analysis - using AllOrigins CORS proxy
+    // URL Analysis - server-side via Netlify function
     async analyzeUrl() {
       if (!this.urlInput) return;
       let url = this.urlInput.trim();
@@ -62,97 +62,16 @@ function seoApp() {
       this.isLoading = true; this.error = ''; this.analysisResult = null;
 
       try {
-        // Try multiple CORS proxies
-        const proxies = [
-          `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-          `https://corsproxy.io/?${encodeURIComponent(url)}`,
-          `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`
-        ];
-        
-        let html = '';
-        let lastError;
-        for (const proxyUrl of proxies) {
-          try {
-            const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(8000) });
-            if (res.ok) { html = await res.text(); break; }
-          } catch (e) { lastError = e; }
-        }
-        if (!html) throw new Error('Could not fetch website. It may be blocking automated access.');
+        const res = await fetch('/.netlify/functions/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url })
+        });
+        const data = await res.json();
+        if (!res.ok || data.error) throw new Error(data.error || 'Analysis failed');
 
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-
-        const title = doc.querySelector('title')?.textContent?.trim() || '';
-        const metaDesc = doc.querySelector('meta[name="description"]')?.getAttribute('content') || '';
-        const metaKeywords = doc.querySelector('meta[name="keywords"]')?.getAttribute('content') || '';
-        const canonical = doc.querySelector('link[rel="canonical"]')?.getAttribute('href') || '';
-        const robots = doc.querySelector('meta[name="robots"]')?.getAttribute('content') || '';
-        const ogTitle = doc.querySelector('meta[property="og:title"]')?.getAttribute('content') || '';
-        const ogDesc = doc.querySelector('meta[property="og:description"]')?.getAttribute('content') || '';
-        const ogImage = doc.querySelector('meta[property="og:image"]')?.getAttribute('content') || '';
-
-        const h1 = [...doc.querySelectorAll('h1')].map(el => el.textContent.trim()).filter(Boolean);
-        const h2 = [...doc.querySelectorAll('h2')].map(el => el.textContent.trim()).filter(Boolean);
-        const h3 = [...doc.querySelectorAll('h3')].map(el => el.textContent.trim()).filter(Boolean);
-
-        const baseDomain = new URL(url).hostname;
-        const links = [...doc.querySelectorAll('a[href]')].map(el => {
-          const href = el.getAttribute('href') || '';
-          const text = el.textContent.trim().substring(0, 100);
-          if (!href || href.startsWith('#') || href.startsWith('javascript:')) return null;
-          let fullHref = href;
-          if (href.startsWith('/')) fullHref = new URL(url).origin + href;
-          let isExternal = false;
-          try { isExternal = new URL(fullHref).hostname !== baseDomain; } catch {}
-          return { text, href: fullHref, isExternal };
-        }).filter(Boolean);
-
-        const images = [...doc.querySelectorAll('img')].map(el => ({
-          src: el.getAttribute('src') || '',
-          alt: el.getAttribute('alt') || ''
-        }));
-
-        const textContent = doc.body?.textContent?.replace(/\s+/g, ' ').trim() || '';
-        const wordCount = textContent.split(/\s+/).filter(w => w.length > 0).length;
-
-        const scrapedData = { url, title, metaDescription: metaDesc, metaKeywords, h1, h2, h3, links, images, textContent: textContent.substring(0, 10000), canonical, ogTitle, ogDescription: ogDesc, ogImage, robots, wordCount };
-
-        // Analyze SEO
-        const issues = [];
-        let score = 100;
-
-        if (!title) { issues.push({ type: 'error', category: 'Title', message: 'Missing page title', suggestion: 'Add a descriptive title between 50-60 characters' }); score -= 20; }
-        else if (title.length < 30) { issues.push({ type: 'warning', category: 'Title', message: `Title is too short (${title.length} characters)`, suggestion: 'Aim for 50-60 characters' }); score -= 10; }
-        else if (title.length > 60) { issues.push({ type: 'warning', category: 'Title', message: `Title is too long (${title.length} characters)`, suggestion: 'Keep title under 60 characters' }); score -= 5; }
-
-        if (!metaDesc) { issues.push({ type: 'error', category: 'Meta Description', message: 'Missing meta description', suggestion: 'Add a compelling meta description between 150-160 characters' }); score -= 15; }
-        else if (metaDesc.length < 120) { issues.push({ type: 'warning', category: 'Meta Description', message: `Meta description too short (${metaDesc.length})`, suggestion: 'Aim for 150-160 characters' }); score -= 5; }
-        else if (metaDesc.length > 160) { issues.push({ type: 'warning', category: 'Meta Description', message: `Meta description too long (${metaDesc.length})`, suggestion: 'Keep under 160 characters' }); score -= 5; }
-
-        if (h1.length === 0) { issues.push({ type: 'error', category: 'Headings', message: 'No H1 tag found', suggestion: 'Add exactly one H1 tag' }); score -= 15; }
-        else if (h1.length > 1) { issues.push({ type: 'warning', category: 'Headings', message: `Multiple H1 tags (${h1.length})`, suggestion: 'Use only one H1 tag per page' }); score -= 5; }
-
-        if (h2.length === 0 && h1.length > 0) { issues.push({ type: 'info', category: 'Headings', message: 'No H2 tags found', suggestion: 'Add H2 tags to organize content' }); score -= 3; }
-
-        const imagesWithoutAlt = images.filter(img => !img.alt).length;
-        if (imagesWithoutAlt > 0) { issues.push({ type: 'warning', category: 'Images', message: `${imagesWithoutAlt} image(s) missing alt text`, suggestion: 'Add descriptive alt text to all images' }); score -= Math.min(imagesWithoutAlt * 2, 10); }
-
-        if (!ogTitle) { issues.push({ type: 'info', category: 'Social', message: 'Missing Open Graph title', suggestion: 'Add og:title for better social sharing' }); score -= 2; }
-        if (!ogDesc) { issues.push({ type: 'info', category: 'Social', message: 'Missing Open Graph description', suggestion: 'Add og:description for social previews' }); score -= 2; }
-        if (!canonical) { issues.push({ type: 'info', category: 'Technical', message: 'No canonical URL set', suggestion: 'Add canonical link to prevent duplicate content' }); score -= 3; }
-        if (wordCount < 300) { issues.push({ type: 'warning', category: 'Content', message: `Low word count (${wordCount})`, suggestion: 'Aim for at least 300 words' }); score -= 5; }
-
-        const recommendations = [];
-        if (h1.length > 0) recommendations.push(`Heading "${h1[0].substring(0, 50)}..." is ${h1[0].length > 70 ? 'long' : 'good length'}`);
-        if (wordCount > 500) recommendations.push('Good content length!');
-        if (links.filter(l => l.isExternal).length > 0) recommendations.push(`${links.filter(l => l.isExternal).length} external link(s) found — good for SEO`);
-
-        score = Math.max(0, Math.min(100, score));
-
-        const analysis = { url, score, issues, stats: { titleLength: title.length, metaDescLength: metaDesc.length, h1Count: h1.length, h2Count: h2.length, linkCount: links.length, externalLinkCount: links.filter(l => l.isExternal).length, imageCount: images.length, imagesWithoutAlt, wordCount }, recommendations };
-
-        this.analysisResult = analysis;
-        this.saveToHistory({ url, score, createdAt: new Date().toISOString() });
+        this.analysisResult = data.data;
+        this.saveToHistory({ url, score: data.data.score, createdAt: new Date().toISOString() });
       } catch (err) { this.error = err.message || 'Failed to analyze URL. Try a different website.'; }
       this.isLoading = false;
       this.$nextTick(() => { lucide.createIcons() });
