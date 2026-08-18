@@ -53,7 +53,7 @@ function seoApp() {
       localStorage.setItem('seo_history', JSON.stringify(this.history));
     },
 
-    // URL Analysis - server-side via Netlify function
+    // URL Analysis
     async analyzeUrl() {
       if (!this.urlInput) return;
       let url = this.urlInput.trim();
@@ -73,23 +73,26 @@ function seoApp() {
           body: JSON.stringify(body)
         });
         const data = await res.json();
-        if (!res.ok || data.error) throw new Error(data.error || 'Analysis failed');
 
-        // If server returned blocked=true, show fallback
-        if (data.data.blocked) {
+        if (data.data && data.data.blocked) {
           this.showHtmlFallback = true;
-          this.error = '';
           this.isLoading = false;
           this.$nextTick(() => { lucide.createIcons() });
           return;
         }
 
-        this.analysisResult = data.data;
-        this.saveToHistory({ url, score: data.data.score, createdAt: new Date().toISOString() });
+        if (data.data && data.data.score !== undefined) {
+          this.analysisResult = data.data;
+          this.saveToHistory({ url, score: data.data.score, createdAt: new Date().toISOString() });
+        } else {
+          this.showHtmlFallback = true;
+        }
       } catch (err) {
         this.showHtmlFallback = true;
-        this.error = '';
       }
+      this.isLoading = false;
+      this.$nextTick(() => { lucide.createIcons() });
+    },
       this.isLoading = false;
       this.$nextTick(() => { lucide.createIcons() });
     },
