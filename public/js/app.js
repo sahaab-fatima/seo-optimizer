@@ -4,8 +4,6 @@ function seoApp() {
   return {
     currentTab: 'home',
     urlInput: '',
-    htmlInput: '',
-    showHtmlFallback: false,
     contentInput: '',
     keywordInput: '',
     isLoading: false,
@@ -63,19 +61,10 @@ function seoApp() {
       this.currentTab = 'analyze';
       this.isLoading = true; this.error = ''; this.analysisResult = null; this.showHtmlFallback = false;
 
-      // If user pasted HTML, analyze directly
-      if (this.htmlInput && this.htmlInput.trim().length > 50) {
-        this.analysisResult = this.analyzeHtmlLocal(this.htmlInput.trim(), url);
-        this.saveToHistory({ url, score: this.analysisResult.score, createdAt: new Date().toISOString() });
-        this.isLoading = false;
-        this.$nextTick(() => { lucide.createIcons() });
-        return;
-      }
-
-      // Step 1: Try Google PageSpeed Insights API (works for ANY site)
+      // Step 1: Google PageSpeed Insights API
       try {
         const psiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&category=seo&strategy=mobile`;
-        const res = await fetch(psiUrl, { signal: AbortSignal.timeout(25000) });
+        const res = await fetch(psiUrl);
         if (res.ok) {
           const data = await res.json();
           if (data.lighthouseResult) {
@@ -88,7 +77,7 @@ function seoApp() {
         }
       } catch (e) {}
 
-      // Step 2: Try CORS proxy
+      // Step 2: CORS proxy
       try {
         const proxies = [
           `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
@@ -96,7 +85,7 @@ function seoApp() {
         ];
         for (const proxyUrl of proxies) {
           try {
-            const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(8000) });
+            const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(10000) });
             if (res.ok) {
               const html = await res.text();
               if (html && html.length > 100) {
@@ -111,8 +100,8 @@ function seoApp() {
         }
       } catch (e) {}
 
-      // Step 3: Fallback - HTML paste
-      this.showHtmlFallback = true;
+      // Step 3: Show error with retry
+      this.error = 'Could not analyze this URL. Try a simpler site like github.com or wikipedia.org, or try again in a few seconds.';
       this.isLoading = false;
       this.$nextTick(() => { lucide.createIcons() });
     },
