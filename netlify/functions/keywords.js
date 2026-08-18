@@ -17,7 +17,7 @@ exports.handler = async (event) => {
     });
 
     const completion = await openai.chat.completions.create({
-      model: 'mimo-v2-flash',
+      model: 'mimo-v2.5',
       messages: [
         { role: 'system', content: 'You are a keyword research expert. Return JSON with: keywords (array of {keyword, searchVolume: high/medium/low, difficulty: high/medium/low, relevance: 0-100}), longTailKeywords (array), questions (array). Only return valid JSON.' },
         { role: 'user', content: `Generate ${count} keyword ideas for: "${topic}"` }

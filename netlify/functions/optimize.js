@@ -26,7 +26,7 @@ exports.handler = async (event) => {
     }
 
     const completion = await openai.chat.completions.create({
-      model: 'mimo-v2-flash',
+      model: 'mimo-v2.5',
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: `Analyze this content:\n\n${content.substring(0, 3000)}` }
