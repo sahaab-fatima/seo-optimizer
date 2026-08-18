@@ -8,6 +8,8 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <link rel="stylesheet" href="/css/style.css">
+    <!-- Google AdSense - Replace ca-pub-XXXXXXXXXXXXXXXX with your AdSense publisher ID -->
+    <!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script> -->
 </head>
 <body class="bg-slate-900 text-white min-h-screen font-sans">
 <div x-data="seoApp()" x-init="init()" class="min-h-screen">
@@ -228,7 +230,14 @@
     </main>
 
     <footer class="fixed bottom-0 left-0 right-0 bg-slate-900/80 backdrop-blur-lg border-t border-slate-700/50 py-3">
-        <div class="max-w-7xl mx-auto px-4 text-center"><p class="text-slate-500 text-sm">Express + JSON Storage + OpenAI &bull; <span class="text-indigo-400">SEOBoost</span></p></div>
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <div class="flex flex-wrap justify-center gap-4 mb-2">
+                <a href="/about.html" class="text-slate-500 hover:text-slate-300 text-xs transition-all">About</a>
+                <a href="/contact.html" class="text-slate-500 hover:text-slate-300 text-xs transition-all">Contact</a>
+                <a href="/privacy.html" class="text-slate-500 hover:text-slate-300 text-xs transition-all">Privacy Policy</a>
+            </div>
+            <p class="text-slate-500 text-sm">&copy; 2026 <span class="text-indigo-400">SEOBoost</span>. All rights reserved.</p>
+        </div>
     </footer>
 </div>
 <script src="/js/app.js"></script>
