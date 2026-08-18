@@ -4,6 +4,7 @@ function seoApp() {
   return {
     currentTab: 'home',
     urlInput: '',
+    htmlInput: '',
     contentInput: '',
     keywordInput: '',
     isLoading: false,
@@ -62,10 +63,13 @@ function seoApp() {
       this.isLoading = true; this.error = ''; this.analysisResult = null;
 
       try {
+        const body = { url };
+        if (this.htmlInput && this.htmlInput.trim().length > 50) body.html = this.htmlInput.trim();
+
         const res = await fetch('/.netlify/functions/analyze', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url })
+          body: JSON.stringify(body)
         });
         const data = await res.json();
         if (!res.ok || data.error) throw new Error(data.error || 'Analysis failed');
