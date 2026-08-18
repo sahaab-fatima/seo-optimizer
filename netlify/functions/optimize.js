@@ -13,16 +13,16 @@ exports.handler = async (event) => {
     const openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
       baseURL: process.env.OPENAI_BASE_URL || 'https://api.xiaomimimo.com/v1',
-      timeout: 15000
+      timeout: 25000
     });
 
     let systemPrompt = '';
     if (type === 'meta') {
-      systemPrompt = 'You are an SEO expert. Generate optimized meta tags. Return JSON with: title (max 60 chars), description (max 160 chars), keywords (array of 5-10). Only return valid JSON.';
+      systemPrompt = 'You are an SEO expert. Generate optimized meta tags. Return JSON with: title (max 60 chars), description (max 160 chars), keywords (array of 5-10). Only return valid JSON. Do not use markdown. Only raw JSON.';
     } else if (type === 'improve') {
-      systemPrompt = 'You are an SEO content optimizer. Return JSON with: score (0-100), suggestions (array), optimizedVersion (improved text). Only return valid JSON.';
+      systemPrompt = 'You are an SEO content optimizer. Return JSON with: score (0-100), suggestions (array), optimizedVersion (improved text). Only return valid JSON. Do not use markdown. Only raw JSON.';
     } else {
-      systemPrompt = 'You are an SEO expert. Return JSON with: overallScore (0-100), strengths (array), weaknesses (array), recommendations (array). Only return valid JSON.';
+      systemPrompt = 'You are an SEO expert. Return JSON with: overallScore (0-100), strengths (array), weaknesses (array), recommendations (array). Only return valid JSON. Do not use markdown. Only raw JSON.';
     }
 
     const completion = await openai.chat.completions.create({
@@ -40,13 +40,10 @@ exports.handler = async (event) => {
     const jsonMatch = responseText.match(/\{[\s\S]*\}/);
     if (jsonMatch) { result = JSON.parse(jsonMatch[0]); } else { result = { raw: responseText }; }
 
-    try {
-      const db = await connectDB();
-      if (db) {
-        const saved = new Content({ originalContent: content.substring(0, 500), type, result });
-        await saved.save();
-      }
-    } catch (dbErr) { console.warn('DB save failed:', dbErr.message); }
+    // DB save - fire and forget
+    connectDB().then(db => {
+      if (db) new Content({ originalContent: content.substring(0, 500), type, result }).save().catch(() => {});
+    }).catch(() => {});
 
     return { statusCode: 200, headers, body: JSON.stringify({ success: true, data: result }) };
   } catch (error) {

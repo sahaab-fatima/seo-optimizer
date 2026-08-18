@@ -13,13 +13,13 @@ exports.handler = async (event) => {
     const openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
       baseURL: process.env.OPENAI_BASE_URL || 'https://api.xiaomimimo.com/v1',
-      timeout: 15000
+      timeout: 25000
     });
 
     const completion = await openai.chat.completions.create({
       model: 'mimo-v2.5',
       messages: [
-        { role: 'system', content: 'You are a keyword research expert. Return JSON with: keywords (array of {keyword, searchVolume: high/medium/low, difficulty: high/medium/low, relevance: 0-100}), longTailKeywords (array), questions (array). Only return valid JSON.' },
+        { role: 'system', content: 'You are a keyword research expert. Return JSON with: keywords (array of {keyword, searchVolume: high/medium/low, difficulty: high/medium/low, relevance: 0-100}), longTailKeywords (array), questions (array). Only return valid JSON. Do not use markdown. Only raw JSON.' },
         { role: 'user', content: `Generate ${count} keyword ideas for: "${topic}"` }
       ],
       temperature: 0.7,
@@ -31,13 +31,10 @@ exports.handler = async (event) => {
     const jsonMatch = responseText.match(/\{[\s\S]*\}/);
     if (jsonMatch) { result = JSON.parse(jsonMatch[0]); } else { result = { keywords: [], longTailKeywords: [], questions: [] }; }
 
-    try {
-      const db = await connectDB();
-      if (db) {
-        const saved = new Keyword({ topic, ...result });
-        await saved.save();
-      }
-    } catch (dbErr) { console.warn('DB save failed:', dbErr.message); }
+    // DB save - fire and forget, don't block response
+    connectDB().then(db => {
+      if (db) new Keyword({ topic, ...result }).save().catch(() => {});
+    }).catch(() => {});
 
     return { statusCode: 200, headers, body: JSON.stringify({ success: true, data: result }) };
   } catch (error) {
