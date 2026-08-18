@@ -38,17 +38,21 @@ function seoApp() {
       return 'Poor';
     },
 
-    async loadHistory() {
+    loadHistory() {
       try {
-        const res = await fetch(`${API_BASE}/api/history/analyses`);
-        const data = await res.json();
-        if (data.success) this.history = data.data;
-      } catch {}
+        const stored = localStorage.getItem('seo_history');
+        this.history = stored ? JSON.parse(stored) : [];
+      } catch { this.history = []; }
+    },
+
+    saveToHistory(entry) {
+      this.history.unshift(entry);
+      if (this.history.length > 20) this.history = this.history.slice(0, 20);
+      localStorage.setItem('seo_history', JSON.stringify(this.history));
     },
 
     async analyzeUrl() {
       if (!this.urlInput) return;
-      const fromHome = this.currentTab === 'home';
       this.currentTab = 'analyze';
       this.isLoading = true; this.error = ''; this.analysisResult = null;
       try {
@@ -60,7 +64,7 @@ function seoApp() {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error);
         this.analysisResult = data.data.analysis;
-        this.loadHistory();
+        this.saveToHistory({ url: this.urlInput, score: this.analysisResult.score, createdAt: new Date().toISOString() });
       } catch (err) { this.error = err.message || 'Analysis failed'; }
       this.isLoading = false;
       this.$nextTick(() => { lucide.createIcons() });
