@@ -1,0 +1,17 @@
+[x-cloak]{display:none!important}
+.card-hover{transition:all .3s ease}
+.card-hover:hover{transform:translateY(-4px);box-shadow:0 20px 40px -12px rgba(99,102,241,.25)}
+.btn-glow{position:relative;overflow:hidden}
+.btn-glow::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:linear-gradient(45deg,transparent,rgba(255,255,255,.1),transparent);transform:rotate(45deg);transition:all .5s ease}
+.btn-glow:hover::before{animation:btnGlow .5s ease}
+@keyframes btnGlow{0%{transform:rotate(45deg) translateX(-200%)}100%{transform:rotate(45deg) translateX(200%)}}
+.spinner{animation:spin 1s linear infinite}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.score-circle{transition:stroke-dashoffset 1.5s ease-out}
+.progress-fill{transition:width 1s ease-out}
+.view-enter{animation:viewEnter .4s ease-out forwards}
+@keyframes viewEnter{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-track{background:#1e293b}
+::-webkit-scrollbar-thumb{background:#4f46e5;border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:#6366f1}

@@ -1,0 +1,912 @@
+[
+  {
+    "url": "https://github.com",
+    "score": 80,
+    "issues": [
+      {
+        "type": "warning",
+        "category": "Title",
+        "message": "Title is too long (305 characters)",
+        "suggestion": "Keep title under 60 characters"
+      },
+      {
+        "type": "warning",
+        "category": "Meta Description",
+        "message": "Meta description is too long (186 characters)",
+        "suggestion": "Keep under 160 characters"
+      },
+      {
+        "type": "warning",
+        "category": "Images",
+        "message": "17 image(s) missing alt text",
+        "suggestion": "Add descriptive alt text to all images"
+      }
+    ],
+    "stats": {
+      "titleLength": 305,
+      "metaDescLength": 186,
+      "h1Count": 1,
+      "h2Count": 9,
+      "linkCount": 137,
+      "externalLinkCount": 30,
+      "imageCount": 24,
+      "imagesWithoutAlt": 17,
+      "wordCount": 852
+    },
+    "recommendations": [
+      "Your main heading \"The future of building happens together...\" is good length",
+      "Good content length! Keep providing valuable information",
+      "You have 30 external link(s) which is good for SEO"
+    ],
+    "_id": "msydhqol5ueu1uxfnqe",
+    "createdAt": "2026-08-18T08:00:28.245Z"
+  },
+  {
+    "url": "https://www.coursera.org/",
+    "score": 85,
+    "issues": [
+      {
+        "type": "warning",
+        "category": "Meta Description",
+        "message": "Meta description is too long (188 characters)",
+        "suggestion": "Keep under 160 characters"
+      },
+      {
+        "type": "warning",
+        "category": "Images",
+        "message": "24 image(s) missing alt text",
+        "suggestion": "Add descriptive alt text to all images"
+      }
+    ],
+    "stats": {
+      "titleLength": 50,
+      "metaDescLength": 188,
+      "h1Count": 1,
+      "h2Count": 23,
+      "linkCount": 166,
+      "externalLinkCount": 21,
+      "imageCount": 36,
+      "imagesWithoutAlt": 24,
+      "wordCount": 1151
+    },
+    "recommendations": [
+      "Your main heading \"Learn without limits...\" is good length",
+      "Good content length! Keep providing valuable information",
+      "You have 21 external link(s) which is good for SEO"
+    ],
+    "_id": "msycsfuchom3oec9rss",
+    "createdAt": "2026-08-18T07:40:47.796Z"
+  },
+  {
+    "url": "https://google.com",
+    "score": 48,
+    "issues": [
+      {
+        "type": "warning",
+        "category": "Title",
+        "message": "Title is too short (6 characters)",
+        "suggestion": "Aim for 50-60 characters for optimal display"
+      },
+      {
+        "type": "error",
+        "category": "Meta Description",
+        "message": "Missing meta description",
+        "suggestion": "Add a compelling meta description between 150-160 characters"
+      },
+      {
+        "type": "error",
+        "category": "Headings",
+        "message": "No H1 tag found",
+        "suggestion": "Add exactly one H1 tag that describes the page content"
+      },
+      {
+        "type": "info",
+        "category": "Social",
+        "message": "Missing Open Graph title",
+        "suggestion": "Add og:title meta tag for better social sharing"
+      },
+      {
+        "type": "info",
+        "category": "Social",
+        "message": "Missing Open Graph description",
+        "suggestion": "Add og:description meta tag for social previews"
+      },
+      {
+        "type": "info",
+        "category": "Technical",
+        "message": "No canonical URL set",
+        "suggestion": "Add a canonical link tag to prevent duplicate content issues"
+      },
+      {
+        "type": "warning",
+        "category": "Content",
+        "message": "Low word count (44 words)",
+        "suggestion": "Aim for at least 300 words for meaningful content"
+      }
+    ],
+    "stats": {
+      "titleLength": 6,
+      "metaDescLength": 0,
+      "h1Count": 0,
+      "h2Count": 0,
+      "linkCount": 19,
+      "externalLinkCount": 15,
+      "imageCount": 1,
+      "imagesWithoutAlt": 0,
+      "wordCount": 44
+    },
+    "recommendations": [
+      "You have 15 external link(s) which is good for SEO"
+    ],
+    "_id": "msycmb8rqxo45yds198",
+    "createdAt": "2026-08-18T07:36:01.899Z"
+  },
+  {
+    "url": "https://google.com",
+    "score": 48,
+    "issues": [
+      {
+        "type": "warning",
+        "category": "Title",
+        "message": "Title is too short (6 characters)",
+        "suggestion": "Aim for 50-60 characters for optimal display"
+      },
+      {
+        "type": "error",
+        "category": "Meta Description",
+        "message": "Missing meta description",
+        "suggestion": "Add a compelling meta description between 150-160 characters"
+      },
+      {
+        "type": "error",
+        "category": "Headings",
+        "message": "No H1 tag found",
+        "suggestion": "Add exactly one H1 tag that describes the page content"
+      },
+      {
+        "type": "info",
+        "category": "Social",
+        "message": "Missing Open Graph title",
+        "suggestion": "Add og:title meta tag for better social sharing"
+      },
+      {
+        "type": "info",
+        "category": "Social",
+        "message": "Missing Open Graph description",
+        "suggestion": "Add og:description meta tag for social previews"
+      },
+      {
+        "type": "info",
+        "category": "Technical",
+        "message": "No canonical URL set",
+        "suggestion": "Add a canonical link tag to prevent duplicate content issues"
+      },
+      {
+        "type": "warning",
+        "category": "Content",
+        "message": "Low word count (29 words)",
+        "suggestion": "Aim for at least 300 words for meaningful content"
+      }
+    ],
+    "stats": {
+      "titleLength": 6,
+      "metaDescLength": 0,
+      "h1Count": 0,
+      "h2Count": 0,
+      "linkCount": 18,
+      "externalLinkCount": 14,
+      "imageCount": 0,
+      "imagesWithoutAlt": 0,
+      "wordCount": 29
+    },
+    "recommendations": [
+      "You have 14 external link(s) which is good for SEO"
+    ],
+    "_id": "msycl5jrch6i4984ds",
+    "createdAt": "2026-08-18T07:35:07.863Z"
+  },
+  {
+    "url": "https://google.com",
+    "score": 48,
+    "issues": [
+      {
+        "type": "warning",
+        "category": "Title",
+        "message": "Title is too short (6 characters)",
+        "suggestion": "Aim for 50-60 characters for optimal display"
+      },
+      {
+        "type": "error",
+        "category": "Meta Description",
+        "message": "Missing meta description",
+        "suggestion": "Add a compelling meta description between 150-160 characters"
+      },
+      {
+        "type": "error",
+        "category": "Headings",
+        "message": "No H1 tag found",
+        "suggestion": "Add exactly one H1 tag that describes the page content"
+      },
+      {
+        "type": "info",
+        "category": "Social",
+        "message": "Missing Open Graph title",
+        "suggestion": "Add og:title meta tag for better social sharing"
+      },
+      {
+        "type": "info",
+        "category": "Social",
+        "message": "Missing Open Graph description",
+        "suggestion": "Add og:description meta tag for social previews"
+      },
+      {
+        "type": "info",
+        "category": "Technical",
+        "message": "No canonical URL set",
+        "suggestion": "Add a canonical link tag to prevent duplicate content issues"
+      },
+      {
+        "type": "warning",
+        "category": "Content",
+        "message": "Low word count (39 words)",
+        "suggestion": "Aim for at least 300 words for meaningful content"
+      }
+    ],
+    "stats": {
+      "titleLength": 6,
+      "metaDescLength": 0,
+      "h1Count": 0,
+      "h2Count": 0,
+      "linkCount": 19,
+      "externalLinkCount": 15,
+      "imageCount": 1,
+      "imagesWithoutAlt": 0,
+      "wordCount": 39
+    },
+    "recommendations": [
+      "You have 15 external link(s) which is good for SEO"
+    ],
+    "_id": "msycl5hc8hjsx8n6up3",
+    "createdAt": "2026-08-18T07:35:07.776Z"
+  },
+  {
+    "url": "https://google.com",
+    "score": 48,
+    "issues": [
+      {
+        "type": "warning",
+        "category": "Title",
+        "message": "Title is too short (6 characters)",
+        "suggestion": "Aim for 50-60 characters for optimal display"
+      },
+      {
+        "type": "error",
+        "category": "Meta Description",
+        "message": "Missing meta description",
+        "suggestion": "Add a compelling meta description between 150-160 characters"
+      },
+      {
+        "type": "error",
+        "category": "Headings",
+        "message": "No H1 tag found",
+        "suggestion": "Add exactly one H1 tag that describes the page content"
+      },
+      {
+        "type": "info",
+        "category": "Social",
+        "message": "Missing Open Graph title",
+        "suggestion": "Add og:title meta tag for better social sharing"
+      },
+      {
+        "type": "info",
+        "category": "Social",
+        "message": "Missing Open Graph description",
+        "suggestion": "Add og:description meta tag for social previews"
+      },
+      {
+        "type": "info",
+        "category": "Technical",
+        "message": "No canonical URL set",
+        "suggestion": "Add a canonical link tag to prevent duplicate content issues"
+      },
+      {
+        "type": "warning",
+        "category": "Content",
+        "message": "Low word count (39 words)",
+        "suggestion": "Aim for at least 300 words for meaningful content"
+      }
+    ],
+    "stats": {
+      "titleLength": 6,
+      "metaDescLength": 0,
+      "h1Count": 0,
+      "h2Count": 0,
+      "linkCount": 19,
+      "externalLinkCount": 15,
+      "imageCount": 1,
+      "imagesWithoutAlt": 0,
+      "wordCount": 39
+    },
+    "recommendations": [
+      "You have 15 external link(s) which is good for SEO"
+    ],
+    "_id": "msycl4y1tu52lacqp5",
+    "createdAt": "2026-08-18T07:35:07.081Z"
+  },
+  {
+    "url": "https://google.com",
+    "score": 48,
+    "issues": [
+      {
+        "type": "warning",
+        "category": "Title",
+        "message": "Title is too short (6 characters)",
+        "suggestion": "Aim for 50-60 characters for optimal display"
+      },
+      {
+        "type": "error",
+        "category": "Meta Description",
+        "message": "Missing meta description",
+        "suggestion": "Add a compelling meta description between 150-160 characters"
+      },
+      {
+        "type": "error",
+        "category": "Headings",
+        "message": "No H1 tag found",
+        "suggestion": "Add exactly one H1 tag that describes the page content"
+      },
+      {
+        "type": "info",
+        "category": "Social",
+        "message": "Missing Open Graph title",
+        "suggestion": "Add og:title meta tag for better social sharing"
+      },
+      {
+        "type": "info",
+        "category": "Social",
+        "message": "Missing Open Graph description",
+        "suggestion": "Add og:description meta tag for social previews"
+      },
+      {
+        "type": "info",
+        "category": "Technical",
+        "message": "No canonical URL set",
+        "suggestion": "Add a canonical link tag to prevent duplicate content issues"
+      },
+      {
+        "type": "warning",
+        "category": "Content",
+        "message": "Low word count (39 words)",
+        "suggestion": "Aim for at least 300 words for meaningful content"
+      }
+    ],
+    "stats": {
+      "titleLength": 6,
+      "metaDescLength": 0,
+      "h1Count": 0,
+      "h2Count": 0,
+      "linkCount": 19,
+      "externalLinkCount": 15,
+      "imageCount": 1,
+      "imagesWithoutAlt": 0,
+      "wordCount": 39
+    },
+    "recommendations": [
+      "You have 15 external link(s) which is good for SEO"
+    ],
+    "_id": "msyck7yym65jek1f3u9",
+    "createdAt": "2026-08-18T07:34:24.346Z"
+  },
+  {
+    "url": "https://google.com",
+    "score": 48,
+    "issues": [
+      {
+        "type": "warning",
+        "category": "Title",
+        "message": "Title is too short (6 characters)",
+        "suggestion": "Aim for 50-60 characters for optimal display"
+      },
+      {
+        "type": "error",
+        "category": "Meta Description",
+        "message": "Missing meta description",
+        "suggestion": "Add a compelling meta description between 150-160 characters"
+      },
+      {
+        "type": "error",
+        "category": "Headings",
+        "message": "No H1 tag found",
+        "suggestion": "Add exactly one H1 tag that describes the page content"
+      },
+      {
+        "type": "info",
+        "category": "Social",
+        "message": "Missing Open Graph title",
+        "suggestion": "Add og:title meta tag for better social sharing"
+      },
+      {
+        "type": "info",
+        "category": "Social",
+        "message": "Missing Open Graph description",
+        "suggestion": "Add og:description meta tag for social previews"
+      },
+      {
+        "type": "info",
+        "category": "Technical",
+        "message": "No canonical URL set",
+        "suggestion": "Add a canonical link tag to prevent duplicate content issues"
+      },
+      {
+        "type": "warning",
+        "category": "Content",
+        "message": "Low word count (39 words)",
+        "suggestion": "Aim for at least 300 words for meaningful content"
+      }
+    ],
+    "stats": {
+      "titleLength": 6,
+      "metaDescLength": 0,
+      "h1Count": 0,
+      "h2Count": 0,
+      "linkCount": 19,
+      "externalLinkCount": 15,
+      "imageCount": 1,
+      "imagesWithoutAlt": 0,
+      "wordCount": 39
+    },
+    "recommendations": [
+      "You have 15 external link(s) which is good for SEO"
+    ],
+    "_id": "msyck7v28d9gzuvc0o5",
+    "createdAt": "2026-08-18T07:34:24.206Z"
+  },
+  {
+    "url": "https://google.com",
+    "score": 48,
+    "issues": [
+      {
+        "type": "warning",
+        "category": "Title",
+        "message": "Title is too short (6 characters)",
+        "suggestion": "Aim for 50-60 characters for optimal display"
+      },
+      {
+        "type": "error",
+        "category": "Meta Description",
+        "message": "Missing meta description",
+        "suggestion": "Add a compelling meta description between 150-160 characters"
+      },
+      {
+        "type": "error",
+        "category": "Headings",
+        "message": "No H1 tag found",
+        "suggestion": "Add exactly one H1 tag that describes the page content"
+      },
+      {
+        "type": "info",
+        "category": "Social",
+        "message": "Missing Open Graph title",
+        "suggestion": "Add og:title meta tag for better social sharing"
+      },
+      {
+        "type": "info",
+        "category": "Social",
+        "message": "Missing Open Graph description",
+        "suggestion": "Add og:description meta tag for social previews"
+      },
+      {
+        "type": "info",
+        "category": "Technical",
+        "message": "No canonical URL set",
+        "suggestion": "Add a canonical link tag to prevent duplicate content issues"
+      },
+      {
+        "type": "warning",
+        "category": "Content",
+        "message": "Low word count (30 words)",
+        "suggestion": "Aim for at least 300 words for meaningful content"
+      }
+    ],
+    "stats": {
+      "titleLength": 6,
+      "metaDescLength": 0,
+      "h1Count": 0,
+      "h2Count": 0,
+      "linkCount": 18,
+      "externalLinkCount": 14,
+      "imageCount": 0,
+      "imagesWithoutAlt": 0,
+      "wordCount": 30
+    },
+    "recommendations": [
+      "You have 14 external link(s) which is good for SEO"
+    ],
+    "_id": "msyck74q8zychumtg69",
+    "createdAt": "2026-08-18T07:34:23.258Z"
+  },
+  {
+    "url": "https://google.com",
+    "score": 48,
+    "issues": [
+      {
+        "type": "warning",
+        "category": "Title",
+        "message": "Title is too short (6 characters)",
+        "suggestion": "Aim for 50-60 characters for optimal display"
+      },
+      {
+        "type": "error",
+        "category": "Meta Description",
+        "message": "Missing meta description",
+        "suggestion": "Add a compelling meta description between 150-160 characters"
+      },
+      {
+        "type": "error",
+        "category": "Headings",
+        "message": "No H1 tag found",
+        "suggestion": "Add exactly one H1 tag that describes the page content"
+      },
+      {
+        "type": "info",
+        "category": "Social",
+        "message": "Missing Open Graph title",
+        "suggestion": "Add og:title meta tag for better social sharing"
+      },
+      {
+        "type": "info",
+        "category": "Social",
+        "message": "Missing Open Graph description",
+        "suggestion": "Add og:description meta tag for social previews"
+      },
+      {
+        "type": "info",
+        "category": "Technical",
+        "message": "No canonical URL set",
+        "suggestion": "Add a canonical link tag to prevent duplicate content issues"
+      },
+      {
+        "type": "warning",
+        "category": "Content",
+        "message": "Low word count (39 words)",
+        "suggestion": "Aim for at least 300 words for meaningful content"
+      }
+    ],
+    "stats": {
+      "titleLength": 6,
+      "metaDescLength": 0,
+      "h1Count": 0,
+      "h2Count": 0,
+      "linkCount": 19,
+      "externalLinkCount": 15,
+      "imageCount": 1,
+      "imagesWithoutAlt": 0,
+      "wordCount": 39
+    },
+    "recommendations": [
+      "You have 15 external link(s) which is good for SEO"
+    ],
+    "_id": "msyck622503bc0yo8lg",
+    "createdAt": "2026-08-18T07:34:21.866Z"
+  },
+  {
+    "url": "https://google.com",
+    "score": 48,
+    "issues": [
+      {
+        "type": "warning",
+        "category": "Title",
+        "message": "Title is too short (6 characters)",
+        "suggestion": "Aim for 50-60 characters for optimal display"
+      },
+      {
+        "type": "error",
+        "category": "Meta Description",
+        "message": "Missing meta description",
+        "suggestion": "Add a compelling meta description between 150-160 characters"
+      },
+      {
+        "type": "error",
+        "category": "Headings",
+        "message": "No H1 tag found",
+        "suggestion": "Add exactly one H1 tag that describes the page content"
+      },
+      {
+        "type": "info",
+        "category": "Social",
+        "message": "Missing Open Graph title",
+        "suggestion": "Add og:title meta tag for better social sharing"
+      },
+      {
+        "type": "info",
+        "category": "Social",
+        "message": "Missing Open Graph description",
+        "suggestion": "Add og:description meta tag for social previews"
+      },
+      {
+        "type": "info",
+        "category": "Technical",
+        "message": "No canonical URL set",
+        "suggestion": "Add a canonical link tag to prevent duplicate content issues"
+      },
+      {
+        "type": "warning",
+        "category": "Content",
+        "message": "Low word count (39 words)",
+        "suggestion": "Aim for at least 300 words for meaningful content"
+      }
+    ],
+    "stats": {
+      "titleLength": 6,
+      "metaDescLength": 0,
+      "h1Count": 0,
+      "h2Count": 0,
+      "linkCount": 19,
+      "externalLinkCount": 15,
+      "imageCount": 1,
+      "imagesWithoutAlt": 0,
+      "wordCount": 39
+    },
+    "recommendations": [
+      "You have 15 external link(s) which is good for SEO"
+    ],
+    "_id": "msyck5pzstm00jpvbna",
+    "createdAt": "2026-08-18T07:34:21.431Z"
+  },
+  {
+    "url": "https://google.com",
+    "score": 48,
+    "issues": [
+      {
+        "type": "warning",
+        "category": "Title",
+        "message": "Title is too short (6 characters)",
+        "suggestion": "Aim for 50-60 characters for optimal display"
+      },
+      {
+        "type": "error",
+        "category": "Meta Description",
+        "message": "Missing meta description",
+        "suggestion": "Add a compelling meta description between 150-160 characters"
+      },
+      {
+        "type": "error",
+        "category": "Headings",
+        "message": "No H1 tag found",
+        "suggestion": "Add exactly one H1 tag that describes the page content"
+      },
+      {
+        "type": "info",
+        "category": "Social",
+        "message": "Missing Open Graph title",
+        "suggestion": "Add og:title meta tag for better social sharing"
+      },
+      {
+        "type": "info",
+        "category": "Social",
+        "message": "Missing Open Graph description",
+        "suggestion": "Add og:description meta tag for social previews"
+      },
+      {
+        "type": "info",
+        "category": "Technical",
+        "message": "No canonical URL set",
+        "suggestion": "Add a canonical link tag to prevent duplicate content issues"
+      },
+      {
+        "type": "warning",
+        "category": "Content",
+        "message": "Low word count (39 words)",
+        "suggestion": "Aim for at least 300 words for meaningful content"
+      }
+    ],
+    "stats": {
+      "titleLength": 6,
+      "metaDescLength": 0,
+      "h1Count": 0,
+      "h2Count": 0,
+      "linkCount": 19,
+      "externalLinkCount": 15,
+      "imageCount": 1,
+      "imagesWithoutAlt": 0,
+      "wordCount": 39
+    },
+    "recommendations": [
+      "You have 15 external link(s) which is good for SEO"
+    ],
+    "_id": "msyck5g9maamuzkb94q",
+    "createdAt": "2026-08-18T07:34:21.081Z"
+  },
+  {
+    "url": "https://google.com",
+    "score": 48,
+    "issues": [
+      {
+        "type": "warning",
+        "category": "Title",
+        "message": "Title is too short (6 characters)",
+        "suggestion": "Aim for 50-60 characters for optimal display"
+      },
+      {
+        "type": "error",
+        "category": "Meta Description",
+        "message": "Missing meta description",
+        "suggestion": "Add a compelling meta description between 150-160 characters"
+      },
+      {
+        "type": "error",
+        "category": "Headings",
+        "message": "No H1 tag found",
+        "suggestion": "Add exactly one H1 tag that describes the page content"
+      },
+      {
+        "type": "info",
+        "category": "Social",
+        "message": "Missing Open Graph title",
+        "suggestion": "Add og:title meta tag for better social sharing"
+      },
+      {
+        "type": "info",
+        "category": "Social",
+        "message": "Missing Open Graph description",
+        "suggestion": "Add og:description meta tag for social previews"
+      },
+      {
+        "type": "info",
+        "category": "Technical",
+        "message": "No canonical URL set",
+        "suggestion": "Add a canonical link tag to prevent duplicate content issues"
+      },
+      {
+        "type": "warning",
+        "category": "Content",
+        "message": "Low word count (39 words)",
+        "suggestion": "Aim for at least 300 words for meaningful content"
+      }
+    ],
+    "stats": {
+      "titleLength": 6,
+      "metaDescLength": 0,
+      "h1Count": 0,
+      "h2Count": 0,
+      "linkCount": 19,
+      "externalLinkCount": 15,
+      "imageCount": 1,
+      "imagesWithoutAlt": 0,
+      "wordCount": 39
+    },
+    "recommendations": [
+      "You have 15 external link(s) which is good for SEO"
+    ],
+    "_id": "msyck4xgvbyjt7rvwg",
+    "createdAt": "2026-08-18T07:34:20.404Z"
+  },
+  {
+    "url": "https://google.com",
+    "score": 48,
+    "issues": [
+      {
+        "type": "warning",
+        "category": "Title",
+        "message": "Title is too short (6 characters)",
+        "suggestion": "Aim for 50-60 characters for optimal display"
+      },
+      {
+        "type": "error",
+        "category": "Meta Description",
+        "message": "Missing meta description",
+        "suggestion": "Add a compelling meta description between 150-160 characters"
+      },
+      {
+        "type": "error",
+        "category": "Headings",
+        "message": "No H1 tag found",
+        "suggestion": "Add exactly one H1 tag that describes the page content"
+      },
+      {
+        "type": "info",
+        "category": "Social",
+        "message": "Missing Open Graph title",
+        "suggestion": "Add og:title meta tag for better social sharing"
+      },
+      {
+        "type": "info",
+        "category": "Social",
+        "message": "Missing Open Graph description",
+        "suggestion": "Add og:description meta tag for social previews"
+      },
+      {
+        "type": "info",
+        "category": "Technical",
+        "message": "No canonical URL set",
+        "suggestion": "Add a canonical link tag to prevent duplicate content issues"
+      },
+      {
+        "type": "warning",
+        "category": "Content",
+        "message": "Low word count (39 words)",
+        "suggestion": "Aim for at least 300 words for meaningful content"
+      }
+    ],
+    "stats": {
+      "titleLength": 6,
+      "metaDescLength": 0,
+      "h1Count": 0,
+      "h2Count": 0,
+      "linkCount": 19,
+      "externalLinkCount": 15,
+      "imageCount": 1,
+      "imagesWithoutAlt": 0,
+      "wordCount": 39
+    },
+    "recommendations": [
+      "You have 15 external link(s) which is good for SEO"
+    ],
+    "_id": "msyck3rrv5xh1njsne",
+    "createdAt": "2026-08-18T07:34:18.903Z"
+  },
+  {
+    "url": "https://google.com",
+    "score": 48,
+    "issues": [
+      {
+        "type": "warning",
+        "category": "Title",
+        "message": "Title is too short (6 characters)",
+        "suggestion": "Aim for 50-60 characters for optimal display"
+      },
+      {
+        "type": "error",
+        "category": "Meta Description",
+        "message": "Missing meta description",
+        "suggestion": "Add a compelling meta description between 150-160 characters"
+      },
+      {
+        "type": "error",
+        "category": "Headings",
+        "message": "No H1 tag found",
+        "suggestion": "Add exactly one H1 tag that describes the page content"
+      },
+      {
+        "type": "info",
+        "category": "Social",
+        "message": "Missing Open Graph title",
+        "suggestion": "Add og:title meta tag for better social sharing"
+      },
+      {
+        "type": "info",
+        "category": "Social",
+        "message": "Missing Open Graph description",
+        "suggestion": "Add og:description meta tag for social previews"
+      },
+      {
+        "type": "info",
+        "category": "Technical",
+        "message": "No canonical URL set",
+        "suggestion": "Add a canonical link tag to prevent duplicate content issues"
+      },
+      {
+        "type": "warning",
+        "category": "Content",
+        "message": "Low word count (44 words)",
+        "suggestion": "Aim for at least 300 words for meaningful content"
+      }
+    ],
+    "stats": {
+      "titleLength": 6,
+      "metaDescLength": 0,
+      "h1Count": 0,
+      "h2Count": 0,
+      "linkCount": 19,
+      "externalLinkCount": 15,
+      "imageCount": 0,
+      "imagesWithoutAlt": 0,
+      "wordCount": 44
+    },
+    "recommendations": [
+      "You have 15 external link(s) which is good for SEO"
+    ],
+    "_id": "msyck0vi7sgkt96m0sa",
+    "createdAt": "2026-08-18T07:34:15.150Z"
+  }
+]

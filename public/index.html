@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEOBoost - AI SEO Optimizer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="bg-slate-900 text-white min-h-screen font-sans">
+<div x-data="seoApp()" x-init="init()" class="min-h-screen">
+
+    <!-- NAV -->
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-slate-900/80 backdrop-blur-lg border-b border-slate-700/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-3 cursor-pointer" @click="currentTab='home';resetResults()">
+                    <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-emerald-500 rounded-xl flex items-center justify-center">
+                        <i data-lucide="trending-up" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <span class="text-xl font-bold bg-gradient-to-r from-indigo-400 to-emerald-400 bg-clip-text text-transparent">SEOBoost</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button @click="currentTab='home'" :class="currentTab==='home'?'bg-indigo-500/20 text-indigo-400':'text-slate-400 hover:text-white'" class="px-3 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2">
+                        <i data-lucide="home" class="w-4 h-4"></i><span class="hidden sm:inline">Home</span>
+                    </button>
+                    <button @click="currentTab='analyze'" :class="currentTab==='analyze'?'bg-indigo-500/20 text-indigo-400':'text-slate-400 hover:text-white'" class="px-3 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2">
+                        <i data-lucide="search" class="w-4 h-4"></i><span class="hidden sm:inline">Analyze</span>
+                    </button>
+                    <button @click="currentTab='content'" :class="currentTab==='content'?'bg-indigo-500/20 text-indigo-400':'text-slate-400 hover:text-white'" class="px-3 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2">
+                        <i data-lucide="sparkles" class="w-4 h-4"></i><span class="hidden sm:inline">Optimize</span>
+                    </button>
+                    <button @click="currentTab='keywords'" :class="currentTab==='keywords'?'bg-indigo-500/20 text-indigo-400':'text-slate-400 hover:text-white'" class="px-3 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2">
+                        <i data-lucide="tag" class="w-4 h-4"></i><span class="hidden sm:inline">Keywords</span>
+                    </button>
+                    <button @click="currentTab='history'" :class="currentTab==='history'?'bg-indigo-500/20 text-indigo-400':'text-slate-400 hover:text-white'" class="px-3 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2">
+                        <i data-lucide="clock" class="w-4 h-4"></i><span class="hidden sm:inline">History</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="pt-20 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+
+        <!-- HOME -->
+        <div x-show="currentTab==='home'" x-cloak class="view-enter">
+            <div class="text-center mb-12">
+                <div class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-500/20 rounded-full text-indigo-400 text-sm font-medium mb-6">
+                    <i data-lucide="sparkles" class="w-4 h-4"></i>AI-Powered SEO Analysis
+                </div>
+                <h1 class="text-4xl sm:text-6xl font-bold mb-6 bg-gradient-to-r from-white via-indigo-200 to-emerald-200 bg-clip-text text-transparent">Optimize Your Website</h1>
+                <p class="text-xl text-slate-400 mb-10 max-w-2xl mx-auto">Get instant SEO audits, AI-powered recommendations, and improve your search rankings.</p>
+                <form @submit.prevent="analyzeUrl()" class="max-w-2xl mx-auto">
+                    <div class="flex gap-3">
+                        <input type="url" x-model="urlInput" placeholder="Enter website URL" class="flex-1 px-4 py-4 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                        <button type="submit" class="px-8 py-4 bg-gradient-to-r from-indigo-500 to-emerald-500 hover:from-indigo-600 hover:to-emerald-600 rounded-xl font-semibold btn-glow flex items-center gap-2">
+                            <i data-lucide="search" class="w-5 h-5"></i>Analyze
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="card-hover bg-slate-800/50 rounded-2xl border border-slate-700/50 p-6 cursor-pointer" @click="currentTab='analyze'">
+                    <div class="w-12 h-12 bg-indigo-500/20 rounded-xl flex items-center justify-center mb-4"><i data-lucide="search" class="w-6 h-6 text-indigo-400"></i></div>
+                    <h3 class="text-xl font-semibold mb-2">URL Analyzer</h3>
+                    <p class="text-slate-400">Analyze any webpage for SEO issues including meta tags, headings, links.</p>
+                </div>
+                <div class="card-hover bg-slate-800/50 rounded-2xl border border-slate-700/50 p-6 cursor-pointer" @click="currentTab='content'">
+                    <div class="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center mb-4"><i data-lucide="sparkles" class="w-6 h-6 text-emerald-400"></i></div>
+                    <h3 class="text-xl font-semibold mb-2">AI Content Optimizer</h3>
+                    <p class="text-slate-400">Get AI-powered suggestions to improve your content for search rankings.</p>
+                </div>
+                <div class="card-hover bg-slate-800/50 rounded-2xl border border-slate-700/50 p-6 cursor-pointer" @click="currentTab='keywords'">
+                    <div class="w-12 h-12 bg-amber-500/20 rounded-xl flex items-center justify-center mb-4"><i data-lucide="tag" class="w-6 h-6 text-amber-400"></i></div>
+                    <h3 class="text-xl font-semibold mb-2">Keyword Research</h3>
+                    <p class="text-slate-400">Discover high-performing keywords with difficulty ratings.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- URL ANALYZER -->
+        <div x-show="currentTab==='analyze'" x-cloak class="view-enter">
+            <div class="bg-slate-800/50 rounded-2xl border border-slate-700/50 p-6 mb-6">
+                <h2 class="text-xl font-semibold text-white mb-4">Analyze URL</h2>
+                <form @submit.prevent="analyzeUrl()" class="flex gap-3">
+                    <input type="url" x-model="urlInput" placeholder="Enter URL (e.g., https://example.com)" class="flex-1 px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                    <button type="submit" :disabled="isLoading" class="px-6 py-3 bg-gradient-to-r from-indigo-500 to-emerald-500 rounded-xl font-semibold btn-glow flex items-center gap-2 disabled:opacity-50">
+                        <i x-show="!isLoading" data-lucide="search" class="w-5 h-5"></i>
+                        <i x-show="isLoading" data-lucide="loader-2" class="w-5 h-5 spinner"></i>
+                        <span x-text="isLoading ? 'Analyzing...' : 'Analyze'"></span>
+                    </button>
+                </form>
+            </div>
+            <div x-show="error" x-cloak class="bg-red-500/20 border border-red-500/50 rounded-xl p-4 mb-6"><p class="text-red-400" x-text="error"></p></div>
+            <div x-show="analysisResult" x-cloak class="space-y-6 view-enter">
+                <div class="bg-slate-800/50 rounded-2xl border border-slate-700/50 p-6">
+                    <div class="flex flex-col sm:flex-row items-center gap-8">
+                        <div class="relative"><svg class="w-40 h-40 -rotate-90"><circle cx="80" cy="80" r="70" stroke="#334155" stroke-width="10" fill="none"/><circle cx="80" cy="80" r="70" stroke="url(#scoreGrad)" stroke-width="10" fill="none" stroke-linecap="round" class="score-circle" :stroke-dasharray="440" :stroke-dashoffset="440-(440*analysisResult.score/100)"/><defs><linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#6366f1"/><stop offset="100%" stop-color="#10b981"/></linearGradient></defs></svg><div class="absolute inset-0 flex flex-col items-center justify-center"><span class="text-4xl font-bold text-white" x-text="analysisResult.score"></span><span class="text-sm text-slate-400">/ 100</span></div></div>
+                        <div class="flex-1 text-center sm:text-left">
+                            <h2 class="text-2xl font-bold text-white mb-2" x-text="getScoreLabel(analysisResult.score)"></h2>
+                            <div class="flex flex-wrap gap-2 justify-center sm:justify-start">
+                                <span class="px-3 py-1 bg-indigo-500/20 text-indigo-400 rounded-full text-sm" x-text="analysisResult.stats.h1Count+' H1'"></span>
+                                <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-full text-sm" x-text="analysisResult.stats.wordCount+' Words'"></span>
+                                <span class="px-3 py-1 bg-amber-500/20 text-amber-400 rounded-full text-sm" x-text="analysisResult.stats.linkCount+' Links'"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="bg-slate-800/50 rounded-xl border border-slate-700/50 p-4"><p class="text-sm text-slate-400 mb-1">Title Length</p><p class="text-2xl font-bold" :class="analysisResult.stats.titleLength>=30&&analysisResult.stats.titleLength<=60?'text-emerald-400':'text-amber-400'" x-text="analysisResult.stats.titleLength"></p></div>
+                    <div class="bg-slate-800/50 rounded-xl border border-slate-700/50 p-4"><p class="text-sm text-slate-400 mb-1">Meta Desc</p><p class="text-2xl font-bold" :class="analysisResult.stats.metaDescLength>=120&&analysisResult.stats.metaDescLength<=160?'text-emerald-400':'text-amber-400'" x-text="analysisResult.stats.metaDescLength"></p></div>
+                    <div class="bg-slate-800/50 rounded-xl border border-slate-700/50 p-4"><p class="text-sm text-slate-400 mb-1">Words</p><p class="text-2xl font-bold" :class="analysisResult.stats.wordCount>=300?'text-emerald-400':'text-amber-400'" x-text="analysisResult.stats.wordCount"></p></div>
+                    <div class="bg-slate-800/50 rounded-xl border border-slate-700/50 p-4"><p class="text-sm text-slate-400 mb-1">Images</p><p class="text-2xl font-bold text-white" x-text="analysisResult.stats.imageCount"></p></div>
+                </div>
+                <div class="bg-slate-800/50 rounded-2xl border border-slate-700/50 p-6">
+                    <h3 class="text-lg font-semibold text-white mb-4">Issues Found</h3>
+                    <div class="space-y-3">
+                        <template x-for="(issue, idx) in analysisResult.issues" :key="idx">
+                            <div class="p-4 rounded-xl border" :class="issue.type==='error'?'bg-red-500/10 border-red-500/30':issue.type==='warning'?'bg-amber-500/10 border-amber-500/30':'bg-blue-500/10 border-blue-500/30'">
+                                <div class="flex items-start gap-3">
+                                    <i :data-lucide="issue.type==='error'?'x-circle':issue.type==='warning'?'alert-triangle':'info'" class="w-5 h-5 mt-0.5" :class="issue.type==='error'?'text-red-400':issue.type==='warning'?'text-amber-400':'text-blue-400'"></i>
+                                    <div>
+                                        <div class="flex items-center gap-2 mb-1">
+                                            <span class="text-xs px-2 py-0.5 bg-slate-700 rounded text-slate-300" x-text="issue.category"></span>
+                                            <span class="text-white font-medium" x-text="issue.message"></span>
+                                        </div>
+                                        <p class="text-slate-400 text-sm mt-1" x-text="issue.suggestion"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONTENT OPTIMIZER -->
+        <div x-show="currentTab==='content'" x-cloak class="view-enter">
+            <div class="bg-slate-800/50 rounded-2xl border border-slate-700/50 p-6 mb-6">
+                <h2 class="text-xl font-semibold text-white mb-4">AI Content Optimizer</h2>
+                <textarea x-model="contentInput" placeholder="Paste your content here..." class="w-full h-48 p-4 bg-slate-900 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"></textarea>
+                <div class="flex gap-3 mt-4">
+                    <button @click="optimizeContent('analyze')" :disabled="isLoading||!contentInput" class="px-6 py-3 bg-gradient-to-r from-indigo-500 to-emerald-500 rounded-xl font-semibold btn-glow flex items-center gap-2 disabled:opacity-50">
+                        <i x-show="!isLoading" data-lucide="sparkles" class="w-5 h-5"></i><i x-show="isLoading" data-lucide="loader-2" class="w-5 h-5 spinner"></i>
+                        <span x-text="isLoading?'Analyzing...':'Analyze SEO'"></span>
+                    </button>
+                    <button @click="optimizeContent('meta')" :disabled="isLoading||!contentInput" class="px-6 py-3 bg-slate-700 hover:bg-slate-600 rounded-xl font-semibold flex items-center gap-2 disabled:opacity-50"><i data-lucide="file-text" class="w-5 h-5"></i>Meta Tags</button>
+                    <button @click="optimizeContent('improve')" :disabled="isLoading||!contentInput" class="px-6 py-3 bg-slate-700 hover:bg-slate-600 rounded-xl font-semibold flex items-center gap-2 disabled:opacity-50"><i data-lucide="wand-2" class="w-5 h-5"></i>Improve</button>
+                </div>
+            </div>
+            <div x-show="error" x-cloak class="bg-red-500/20 border border-red-500/50 rounded-xl p-4 mb-6"><p class="text-red-400" x-text="error"></p></div>
+            <div x-show="contentResult" x-cloak class="bg-slate-800/50 rounded-2xl border border-slate-700/50 p-6 view-enter">
+                <h3 class="text-lg font-semibold text-white mb-4">AI Results</h3>
+                <div x-html="formatContentResult()"></div>
+            </div>
+        </div>
+
+        <!-- KEYWORD RESEARCH -->
+        <div x-show="currentTab==='keywords'" x-cloak class="view-enter">
+            <div class="bg-slate-800/50 rounded-2xl border border-slate-700/50 p-6 mb-6">
+                <h2 class="text-xl font-semibold text-white mb-4">Keyword Research</h2>
+                <div class="flex gap-3">
+                    <input type="text" x-model="keywordInput" placeholder="Enter a topic (e.g., 'digital marketing')" class="flex-1 px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" @keydown.enter="researchKeywords()">
+                    <button @click="researchKeywords()" :disabled="isLoading||!keywordInput" class="px-6 py-3 bg-gradient-to-r from-indigo-500 to-emerald-500 rounded-xl font-semibold btn-glow flex items-center gap-2 disabled:opacity-50">
+                        <i x-show="!isLoading" data-lucide="search" class="w-5 h-5"></i><i x-show="isLoading" data-lucide="loader-2" class="w-5 h-5 spinner"></i>
+                        <span x-text="isLoading?'Researching...':'Research'"></span>
+                    </button>
+                </div>
+            </div>
+            <div x-show="error" x-cloak class="bg-red-500/20 border border-red-500/50 rounded-xl p-4 mb-6"><p class="text-red-400" x-text="error"></p></div>
+            <div x-show="keywordResult" x-cloak class="space-y-6 view-enter">
+                <div x-show="keywordResult?.keywords?.length" class="bg-slate-800/50 rounded-2xl border border-slate-700/50 p-6">
+                    <h3 class="text-lg font-semibold text-white mb-4">Keywords</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead><tr class="text-left text-sm text-slate-400 border-b border-slate-700"><th class="pb-3 font-medium">Keyword</th><th class="pb-3 font-medium">Volume</th><th class="pb-3 font-medium">Difficulty</th><th class="pb-3 font-medium">Relevance</th></tr></thead>
+                            <tbody class="divide-y divide-slate-700/50">
+                                <template x-for="(kw, idx) in keywordResult.keywords" :key="idx">
+                                    <tr class="text-slate-300"><td class="py-3 pr-4" x-text="kw.keyword"></td><td class="py-3 pr-4"><span class="px-2 py-1 rounded text-xs" :class="kw.searchVolume==='high'?'text-emerald-400 bg-emerald-500/20':kw.searchVolume==='medium'?'text-amber-400 bg-amber-500/20':'text-red-400 bg-red-500/20'" x-text="kw.searchVolume"></span></td><td class="py-3 pr-4"><span class="px-2 py-1 rounded text-xs" :class="kw.difficulty==='low'?'text-emerald-400 bg-emerald-500/20':kw.difficulty==='medium'?'text-amber-400 bg-amber-500/20':'text-red-400 bg-red-500/20'" x-text="kw.difficulty"></span></td><td class="py-3"><div class="flex items-center gap-2"><div class="w-16 bg-slate-700 rounded-full h-2"><div class="bg-indigo-500 h-2 rounded-full" :style="'width:'+(kw.relevance||50)+'%'"></div></div><span class="text-sm" x-text="kw.relevance+'%'"></span></div></td></tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div x-show="keywordResult?.longTailKeywords?.length" class="bg-slate-800/50 rounded-2xl border border-slate-700/50 p-6">
+                    <h3 class="text-lg font-semibold text-white mb-4">Long-tail Keywords</h3>
+                    <div class="flex flex-wrap gap-2">
+                        <template x-for="(kw, idx) in keywordResult.longTailKeywords" :key="idx"><span class="px-3 py-2 bg-slate-700/50 text-slate-300 rounded-lg text-sm" x-text="kw"></span></template>
+                    </div>
+                </div>
+                <div x-show="keywordResult?.questions?.length" class="bg-slate-800/50 rounded-2xl border border-slate-700/50 p-6">
+                    <h3 class="text-lg font-semibold text-white mb-4">Common Questions</h3>
+                    <ul class="space-y-3">
+                        <template x-for="(q, idx) in keywordResult.questions" :key="idx"><li class="flex items-start gap-3 text-slate-300"><span class="text-amber-400">Q:</span><span x-text="q"></span></li></template>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- HISTORY -->
+        <div x-show="currentTab==='history'" x-cloak class="view-enter">
+            <div class="bg-slate-800/50 rounded-2xl border border-slate-700/50 p-6 mb-6">
+                <h2 class="text-xl font-semibold text-white mb-4">Analysis History</h2>
+                <p class="text-slate-400">Your past SEO analyses are saved in the database.</p>
+            </div>
+            <div x-show="history.length===0" class="text-center py-12">
+                <i data-lucide="clock" class="w-12 h-12 text-slate-600 mx-auto mb-4"></i>
+                <p class="text-slate-400">No history yet. Analyze a URL to get started.</p>
+            </div>
+            <div class="space-y-4">
+                <template x-for="(item, idx) in history" :key="idx">
+                    <div class="bg-slate-800/50 rounded-2xl border border-slate-700/50 p-5 flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl flex items-center justify-center" :class="item.score>=80?'bg-emerald-500/20':item.score>=60?'bg-amber-500/20':'bg-red-500/20'">
+                            <span class="text-lg font-bold" :class="item.score>=80?'text-emerald-400':item.score>=60?'text-amber-400':'text-red-400'" x-text="item.score"></span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-white font-medium truncate" x-text="item.url"></p>
+                            <p class="text-xs text-slate-500" x-text="new Date(item.createdAt).toLocaleDateString()"></p>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="fixed bottom-0 left-0 right-0 bg-slate-900/80 backdrop-blur-lg border-t border-slate-700/50 py-3">
+        <div class="max-w-7xl mx-auto px-4 text-center"><p class="text-slate-500 text-sm">Express + JSON Storage + OpenAI &bull; <span class="text-indigo-400">SEOBoost</span></p></div>
+    </footer>
+</div>
+<script src="/js/app.js"></script>
+</body>
+</html>
