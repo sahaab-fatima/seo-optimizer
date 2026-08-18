@@ -79,10 +79,13 @@ function seoApp() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ content: this.contentInput, type })
         });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error);
+        const text = await res.text();
+        let data;
+        try { data = JSON.parse(text); } catch { throw new Error('Invalid response from server. Please try again.'); }
+        if (!res.ok) throw new Error(data.error || 'Request failed');
+        if (!data.success || !data.data) throw new Error('No data received. Please try again.');
         this.contentResult = data.data;
-      } catch (err) { this.error = err.message || 'Optimization failed'; }
+      } catch (err) { this.error = err.message || 'Optimization failed. Please try again.'; }
       this.isLoading = false;
       this.$nextTick(() => { lucide.createIcons() });
     },
@@ -96,10 +99,13 @@ function seoApp() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ topic: this.keywordInput, count: 10 })
         });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error);
+        const text = await res.text();
+        let data;
+        try { data = JSON.parse(text); } catch { throw new Error('Invalid response from server. Please try again.'); }
+        if (!res.ok) throw new Error(data.error || 'Request failed');
+        if (!data.success || !data.data) throw new Error('No data received. Please try again.');
         this.keywordResult = data.data;
-      } catch (err) { this.error = err.message || 'Research failed'; }
+      } catch (err) { this.error = err.message || 'Research failed. Please try again.'; }
       this.isLoading = false;
       this.$nextTick(() => { lucide.createIcons() });
     },

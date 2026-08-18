@@ -37,7 +37,9 @@ exports.handler = async (event) => {
 
     const responseText = completion.choices[0].message.content || '{}';
     let result;
-    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+    // Strip markdown code blocks if present
+    let cleanText = responseText.replace(/```json\s*/gi, '').replace(/```\s*/gi, '').trim();
+    const jsonMatch = cleanText.match(/\{[\s\S]*\}/);
     if (jsonMatch) { result = JSON.parse(jsonMatch[0]); } else { result = { raw: responseText }; }
 
     // DB save - fire and forget
