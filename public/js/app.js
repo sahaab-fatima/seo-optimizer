@@ -61,19 +61,20 @@ function seoApp() {
       this.currentTab = 'analyze';
       this.isLoading = true; this.error = ''; this.analysisResult = null;
 
-      // Step 1: Google PageSpeed Insights API (works for ANY public URL)
+      // Step 1: Google PageSpeed via Netlify function (no CORS issues)
       try {
-        const psiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&category=seo&strategy=mobile`;
-        const res = await fetch(psiUrl);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.lighthouseResult) {
-            this.analysisResult = this.parsePsiResult(data, url);
-            this.saveToHistory({ url, score: this.analysisResult.score, createdAt: new Date().toISOString() });
-            this.isLoading = false;
-            this.$nextTick(() => { lucide.createIcons() });
-            return;
-          }
+        const res = await fetch('/.netlify/functions/pagespeed', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url })
+        });
+        const json = await res.json();
+        if (json.success && json.data && json.data.lighthouseResult) {
+          this.analysisResult = this.parsePsiResult(json.data, url);
+          this.saveToHistory({ url, score: this.analysisResult.score, createdAt: new Date().toISOString() });
+          this.isLoading = false;
+          this.$nextTick(() => { lucide.createIcons() });
+          return;
         }
       } catch (e) {}
 
