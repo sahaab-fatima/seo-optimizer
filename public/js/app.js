@@ -51,7 +51,7 @@ function seoApp() {
       localStorage.setItem('seo_history', JSON.stringify(this.history));
     },
 
-    // URL Analysis
+    // URL Analysis - ALL client-side, NO server functions
     async analyzeUrl() {
       if (!this.urlInput) return;
       let url = this.urlInput.trim();
@@ -61,47 +61,45 @@ function seoApp() {
       this.currentTab = 'analyze';
       this.isLoading = true; this.error = ''; this.analysisResult = null;
 
-      // Step 1: Google PageSpeed via Netlify function (no CORS issues)
+      // Method 1: Google PageSpeed Insights (CORS supported, works from browser)
       try {
-        const res = await fetch('/.netlify/functions/pagespeed', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url })
-        });
-        const json = await res.json();
-        if (json.success && json.data && json.data.lighthouseResult) {
-          this.analysisResult = this.parsePsiResult(json.data, url);
+        const psiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&category=seo&strategy=mobile`;
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 30000);
+        const res = await fetch(psiUrl, { signal: controller.signal });
+        clearTimeout(timeout);
+        const data = await res.json();
+        if (data.lighthouseResult) {
+          this.analysisResult = this.parsePsiResult(data, url);
           this.saveToHistory({ url, score: this.analysisResult.score, createdAt: new Date().toISOString() });
           this.isLoading = false;
           this.$nextTick(() => { lucide.createIcons() });
           return;
         }
-      } catch (e) {}
+      } catch (e) { console.log('PSI failed:', e.message); }
 
-      // Step 2: CORS proxy fallback
-      try {
-        const proxies = [
-          `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-          `https://corsproxy.io/?${encodeURIComponent(url)}`
-        ];
-        for (const proxyUrl of proxies) {
-          try {
-            const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(10000) });
-            if (res.ok) {
-              const html = await res.text();
-              if (html && html.length > 100) {
-                this.analysisResult = this.analyzeHtmlLocal(html, url);
-                this.saveToHistory({ url, score: this.analysisResult.score, createdAt: new Date().toISOString() });
-                this.isLoading = false;
-                this.$nextTick(() => { lucide.createIcons() });
-                return;
-              }
+      // Method 2: CORS proxy
+      const proxies = [
+        `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+        `https://corsproxy.io/?${encodeURIComponent(url)}`
+      ];
+      for (const proxyUrl of proxies) {
+        try {
+          const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(12000) });
+          if (res.ok) {
+            const html = await res.text();
+            if (html && html.length > 100) {
+              this.analysisResult = this.analyzeHtmlLocal(html, url);
+              this.saveToHistory({ url, score: this.analysisResult.score, createdAt: new Date().toISOString() });
+              this.isLoading = false;
+              this.$nextTick(() => { lucide.createIcons() });
+              return;
             }
-          } catch (e) { continue; }
-        }
-      } catch (e) {}
+          }
+        } catch (e) { continue; }
+      }
 
-      this.error = 'Could not analyze this URL. Try again in a few seconds or try a different URL.';
+      this.error = 'Could not analyze. Try again or try a different URL.';
       this.isLoading = false;
       this.$nextTick(() => { lucide.createIcons() });
     },
