@@ -51,7 +51,7 @@ function seoApp() {
       localStorage.setItem('seo_history', JSON.stringify(this.history));
     },
 
-    // URL Analysis - ALL client-side, NO server functions
+    // URL Analysis
     async analyzeUrl() {
       if (!this.urlInput) return;
       let url = this.urlInput.trim();
@@ -61,13 +61,10 @@ function seoApp() {
       this.currentTab = 'analyze';
       this.isLoading = true; this.error = ''; this.analysisResult = null;
 
-      // Method 1: Google PageSpeed Insights (CORS supported, works from browser)
+      // Method 1: Google PageSpeed directly (supports CORS)
       try {
         const psiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&category=seo&strategy=mobile`;
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 30000);
-        const res = await fetch(psiUrl, { signal: controller.signal });
-        clearTimeout(timeout);
+        const res = await fetch(psiUrl);
         const data = await res.json();
         if (data.lighthouseResult) {
           this.analysisResult = this.parsePsiResult(data, url);
@@ -76,9 +73,26 @@ function seoApp() {
           this.$nextTick(() => { lucide.createIcons() });
           return;
         }
-      } catch (e) { console.log('PSI failed:', e.message); }
+      } catch (e) { console.log('Direct PSI failed:', e); }
 
-      // Method 2: CORS proxy
+      // Method 2: Via Netlify function
+      try {
+        const res = await fetch('/.netlify/functions/pagespeed', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url })
+        });
+        const json = await res.json();
+        if (json.success && json.data && json.data.lighthouseResult) {
+          this.analysisResult = this.parsePsiResult(json.data, url);
+          this.saveToHistory({ url, score: this.analysisResult.score, createdAt: new Date().toISOString() });
+          this.isLoading = false;
+          this.$nextTick(() => { lucide.createIcons() });
+          return;
+        }
+      } catch (e) { console.log('Function PSI failed:', e); }
+
+      // Method 3: CORS proxy
       const proxies = [
         `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
         `https://corsproxy.io/?${encodeURIComponent(url)}`
