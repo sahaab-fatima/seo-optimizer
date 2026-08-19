@@ -55,7 +55,8 @@ function seoApp() {
     async analyzeUrl() {
       if (!this.urlInput) return;
       let url = this.urlInput.trim();
-      if (!url.startsWith('http://') && !url.startsWith('https://')) url = 'https://' + url;
+      // Accept any format: with http, https, or just domain
+      if (!url.match(/^https?:\/\//i)) url = 'https://' + url;
       try { new URL(url); } catch { this.error = 'Please enter a valid URL'; return; }
 
       this.currentTab = 'analyze';
@@ -150,32 +151,165 @@ function seoApp() {
       }
     },
 
-    // Content Optimization - local
+    // Content Optimization
     optimizeContent(type) {
       if (!this.contentInput) return;
       this.isLoading = true; this.error = ''; this.contentResult = null;
 
       const content = this.contentInput;
       const wordCount = content.split(/\s+/).filter(w => w.length > 0).length;
-      const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 0).length;
-      const avgWordsPerSentence = sentences > 0 ? Math.round(wordCount / sentences) : 0;
+      const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 0);
+      const avgWordsPerSentence = sentences.length > 0 ? Math.round(wordCount / sentences.length) : 0;
 
       const stopWords = new Set(['the','a','an','is','are','was','were','be','been','being','have','has','had','do','does','did','will','would','could','should','may','might','can','shall','to','of','in','for','on','with','at','by','from','as','into','through','during','before','after','above','below','between','out','off','over','under','again','further','then','once','here','there','when','where','why','how','all','both','each','few','more','most','other','some','such','no','not','only','own','same','so','than','too','very','just','because','but','and','or','if','while','about','up','its','it','this','that','these','those','i','me','my','we','our','you','your','he','him','his','she','her','they','them','their','what','which','who','whom']);
       const words = content.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter(w => w.length > 3 && !stopWords.has(w));
       const wordFreq = {};
       words.forEach(w => { wordFreq[w] = (wordFreq[w] || 0) + 1; });
-      const topWords = Object.entries(wordFreq).sort((a, b) => b[1] - a[1]).slice(0, 8).map(e => e[0]);
+      const topWords = Object.entries(wordFreq).sort((a, b) => b[1] - a[1]).slice(0, 10).map(e => e[0]);
+      const mainKeyword = topWords[0] || content.split(/\s+/)[0]?.toLowerCase() || 'topic';
+
+      // Extract first meaningful sentence for title base
+      const firstSentence = sentences[0]?.trim() || content.substring(0, 100);
 
       let result;
       if (type === 'meta') {
-        const title = content.split('.')[0].substring(0, 55).trim() || 'Optimized Page Title';
-        result = { title, description: content.substring(0, 150).trim() + '...', keywords: topWords.length > 0 ? topWords : ['seo', 'content', 'optimization'] };
+        // Generate smart title
+        let seoTitle = firstSentence.charAt(0).toUpperCase() + firstSentence.slice(1);
+        if (seoTitle.length > 55) seoTitle = seoTitle.substring(0, 52) + '...';
+        if (!seoTitle.endsWith('.') && !seoTitle.endsWith('!')) seoTitle += ' | ' + mainKeyword.charAt(0).toUpperCase() + mainKeyword.slice(1);
+
+        // Generate smart meta description
+        let seoDesc = '';
+        if (sentences.length > 1) {
+          seoDesc = sentences[0].trim() + ' ' + sentences[1].trim();
+        } else {
+          seoDesc = content.substring(0, 140).trim();
+        }
+        if (seoDesc.length > 155) seoDesc = seoDesc.substring(0, 152) + '...';
+        if (!seoDesc.endsWith('.')) seoDesc += '.';
+
+        // Find primary keywords from content
+        const primaryKeywords = topWords.slice(0, 5);
+        const secondaryKeywords = topWords.slice(5, 10);
+
+        result = {
+          title: seoTitle,
+          titleLength: seoTitle.length,
+          titleStatus: seoTitle.length >= 50 && seoTitle.length <= 60 ? 'Perfect' : seoTitle.length < 50 ? 'Could be longer' : 'Slightly long',
+          description: seoDesc,
+          descLength: seoDesc.length,
+          descStatus: seoDesc.length >= 150 && seoDesc.length <= 160 ? 'Perfect' : seoDesc.length < 150 ? 'Could be longer' : 'Slightly long',
+          primaryKeywords,
+          secondaryKeywords,
+          suggestions: [
+            `Use "${mainKeyword}" in your title tag`,
+            `Include "${mainKeyword}" in the first 100 words`,
+            primaryKeywords.length >= 3 ? 'Good keyword variety' : 'Add more relevant keywords',
+            seoTitle.length >= 50 && seoTitle.length <= 60 ? 'Title length is perfect' : 'Aim for 50-60 character title',
+            seoDesc.length >= 150 ? 'Meta description length is good' : 'Expand description to 150-160 characters'
+          ]
+        };
       } else if (type === 'improve') {
-        const score = Math.min(95, Math.max(25, (wordCount > 200 ? 20 : 10) + (wordCount > 500 ? 15 : 0) + (sentences > 5 ? 10 : 5) + (avgWordsPerSentence < 25 ? 15 : 5) + (topWords.length > 3 ? 15 : 5) + 20));
-        result = { score, suggestions: [wordCount < 300 ? 'Increase content to at least 300 words' : 'Good content length', avgWordsPerSentence > 25 ? 'Shorten sentences for readability' : 'Good sentence length', topWords.length < 3 ? 'Add more relevant keywords' : 'Good keyword usage', 'Add a compelling title tag', 'Write a meta description', 'Use H2 and H3 headings'], optimizedVersion: content };
+        // Calculate detailed SEO score
+        let score = 50;
+        const details = [];
+
+        // Content length analysis
+        if (wordCount > 1500) { score += 20; details.push({ check: 'Excellent content length (' + wordCount + ' words)', status: 'pass' }); }
+        else if (wordCount > 800) { score += 15; details.push({ check: 'Good content length (' + wordCount + ' words)', status: 'pass' }); }
+        else if (wordCount > 300) { score += 8; details.push({ check: 'Content length (' + wordCount + ' words) - aim for 800+ for better ranking', status: 'warn' }); }
+        else { details.push({ check: 'Content too short (' + wordCount + ' words) - aim for 800+ words', status: 'fail' }); }
+
+        // Keyword density
+        const primaryDensity = words.length > 0 ? ((wordFreq[mainKeyword] || 0) / words.length * 100).toFixed(1) : 0;
+        if (primaryDensity >= 1 && primaryDensity <= 2.5) { score += 15; details.push({ check: `"${mainKeyword}" density is ${primaryDensity}% - perfect`, status: 'pass' }); }
+        else if (primaryDensity > 0) { score += 8; details.push({ check: `"${mainKeyword}" density is ${primaryDensity}% - aim for 1-2.5%`, status: 'warn' }); }
+        else { details.push({ check: `"${mainKeyword}" not found enough - add it naturally`, status: 'fail' }); }
+
+        // Sentence readability
+        if (avgWordsPerSentence <= 18) { score += 10; details.push({ check: 'Good readability (avg ' + avgWordsPerSentence + ' words/sentence)', status: 'pass' }); }
+        else if (avgWordsPerSentence <= 25) { score += 5; details.push({ check: 'Sentences are a bit long (avg ' + avgWordsPerSentence + ' words) - aim for under 18', status: 'warn' }); }
+        else { details.push({ check: 'Sentences too long (avg ' + avgWordsPerSentence + ' words) - break them up', status: 'fail' }); }
+
+        // Keyword variety
+        if (topWords.length >= 6) { score += 10; details.push({ check: 'Good keyword variety (' + topWords.length + ' unique keywords)', status: 'pass' }); }
+        else { score += 5; details.push({ check: 'Low keyword variety - add more related terms', status: 'warn' }); }
+
+        // Structure
+        if (content.includes('\n') || content.includes('•') || content.includes('-')) { score += 5; details.push({ check: 'Content has some structure', status: 'pass' }); }
+        else { details.push({ check: 'Add bullet points, lists, or line breaks for better readability', status: 'warn' }); }
+
+        // Generate improved version
+        let improved = content;
+        // Capitalize first letter of each sentence
+        improved = improved.replace(/(^|[.!?]\s+)([a-z])/g, (m, p, c) => p + c.toUpperCase());
+        // Ensure it starts with a capital letter
+        if (improved[0]) improved = improved[0].toUpperCase() + improved.slice(1);
+
+        // Add keyword suggestions naturally
+        if (!content.toLowerCase().includes(mainKeyword)) {
+          improved = `When it comes to ${mainKeyword}, ${improved.charAt(0).toLowerCase() + improved.slice(1)}`;
+        }
+
+        result = {
+          score: Math.min(95, Math.max(15, score)),
+          details,
+          optimizedVersion: improved,
+          keywordsFound: topWords.slice(0, 5),
+          recommendations: [
+            `Target keyword: "${mainKeyword}" - use it 2-3% of the time`,
+            'Add the keyword in your first 100 words',
+            'Use H2 headings every 200-300 words with keywords',
+            'Add internal links to related pages on your site',
+            'Include at least one external authority link',
+            'Add images with descriptive alt text containing your keyword',
+            `Write a meta description of 150-160 characters using "${mainKeyword}"`,
+            wordCount < 500 ? `Expand content to 800+ words (currently ${wordCount})` : 'Good content length'
+          ]
+        };
       } else {
-        const score = Math.min(95, Math.max(25, (wordCount > 200 ? 20 : 10) + (wordCount > 500 ? 15 : 0) + (sentences > 5 ? 10 : 5) + (topWords.length > 3 ? 15 : 5) + 25));
-        result = { overallScore: score, strengths: [wordCount > 200 ? `Good content length (${wordCount} words)` : `Content length: ${wordCount} words`, topWords.length > 3 ? 'Multiple relevant keywords found' : 'Some keywords present', sentences > 3 ? 'Good content structure' : 'Content exists'], weaknesses: [wordCount < 300 ? 'Content too short - aim for 300+ words' : null, avgWordsPerSentence > 25 ? 'Sentences too long - keep under 20 words' : null, topWords.length < 3 ? 'Not enough keyword variety' : null].filter(Boolean), recommendations: ['Add target keyword in first 100 words', 'Use H2 headings every 200-300 words', 'Add internal links to related content', 'Include at least one external authority link', 'Add alt text to all images', 'Write a meta description between 150-160 characters'] };
+        // Analyze SEO
+        let score = 50;
+        const strengths = [];
+        const weaknesses = [];
+
+        // Length check
+        if (wordCount > 1000) { score += 18; strengths.push(`Excellent length: ${wordCount} words`); }
+        else if (wordCount > 500) { score += 12; strengths.push(`Good length: ${wordCount} words`); }
+        else if (wordCount > 300) { score += 5; strengths.push(`Decent length: ${wordCount} words`); }
+        else { weaknesses.push(`Too short: ${wordCount} words - aim for 800+`); }
+
+        // Readability
+        if (avgWordsPerSentence <= 18) { score += 12; strengths.push('Easy to read - short sentences'); }
+        else if (avgWordsPerSentence <= 25) { score += 5; strengths.push('Readable but could be better'); }
+        else { weaknesses.push('Hard to read - sentences too long (avg ' + avgWordsPerSentence + ' words)'); }
+
+        // Keywords
+        if (topWords.length >= 5) { score += 10; strengths.push(`Rich keyword variety: ${topWords.slice(0, 3).join(', ')}`); }
+        else { weaknesses.push('Needs more keyword variety - add related terms'); }
+
+        // Primary keyword usage
+        const primaryCount = wordFreq[mainKeyword] || 0;
+        if (primaryCount >= 3) { score += 10; strengths.push(`"${mainKeyword}" used ${primaryCount} times - good`); }
+        else { weaknesses.push(`"${mainKeyword}" used only ${primaryCount} times - use it 3-5+ times`); }
+
+        result = {
+          overallScore: Math.min(95, Math.max(15, score)),
+          strengths,
+          weaknesses,
+          topKeywords: topWords.slice(0, 8),
+          recommendations: [
+            `Primary keyword: "${mainKeyword}"`,
+            `Current word count: ${wordCount} - aim for 800+`,
+            'Add the keyword in your title, first paragraph, and headings',
+            'Use H2/H3 headings with keywords every 200-300 words',
+            'Add internal links to related content',
+            'Include 1-2 external authority links',
+            'Add images with keyword-rich alt text',
+            'Write a compelling meta description',
+            'Make content scannable with bullets and short paragraphs'
+          ]
+        };
       }
 
       this.contentResult = result;
@@ -213,16 +347,75 @@ function seoApp() {
     formatContentResult() {
       if (!this.contentResult) return '';
       let html = '<div class="space-y-4">';
-      if (this.contentResult.overallScore) html += `<div class="flex items-center gap-4"><span class="text-slate-400">Score:</span><span class="text-2xl font-bold ${this.contentResult.overallScore >= 80 ? 'text-emerald-400' : this.contentResult.overallScore >= 60 ? 'text-amber-400' : 'text-red-400'}">${this.contentResult.overallScore}/100</span></div>`;
-      if (this.contentResult.score) html += `<div class="flex items-center gap-4"><span class="text-slate-400">Score:</span><span class="text-2xl font-bold ${this.contentResult.score >= 80 ? 'text-emerald-400' : this.contentResult.score >= 60 ? 'text-amber-400' : 'text-red-400'}">${this.contentResult.score}/100</span></div>`;
-      if (this.contentResult.strengths) { html += '<div><p class="text-emerald-400 font-medium mb-2">Strengths</p><ul class="space-y-1">'; this.contentResult.strengths.forEach(s => { html += `<li class="flex items-start gap-2 text-slate-300"><span class="text-emerald-400">&#10003;</span>${s}</li>` }); html += '</ul></div>'; }
-      if (this.contentResult.weaknesses) { html += '<div><p class="text-amber-400 font-medium mb-2">Areas to Improve</p><ul class="space-y-1">'; this.contentResult.weaknesses.forEach(w => { html += `<li class="flex items-start gap-2 text-slate-300"><span class="text-amber-400">!</span>${w}</li>` }); html += '</ul></div>'; }
-      if (this.contentResult.recommendations) { html += '<div><p class="text-indigo-400 font-medium mb-2">Recommendations</p><ul class="space-y-1">'; this.contentResult.recommendations.forEach(r => { html += `<li class="flex items-start gap-2 text-slate-300"><span class="text-indigo-400">&rarr;</span>${r}</li>` }); html += '</ul></div>'; }
-      if (this.contentResult.title) html += `<div class="bg-slate-900 rounded-xl p-4"><p class="text-sm text-slate-400 mb-1">Generated Title</p><p class="text-slate-300">${this.contentResult.title}</p></div>`;
-      if (this.contentResult.description) html += `<div class="bg-slate-900 rounded-xl p-4"><p class="text-sm text-slate-400 mb-1">Generated Description</p><p class="text-slate-300">${this.contentResult.description}</p></div>`;
-      if (this.contentResult.keywords) { html += '<div class="bg-slate-900 rounded-xl p-4"><p class="text-sm text-slate-400 mb-2">Keywords</p><div class="flex flex-wrap gap-2">'; this.contentResult.keywords.forEach(k => { html += `<span class="px-3 py-1 bg-indigo-500/20 text-indigo-400 rounded-full text-sm">${k}</span>` }); html += '</div></div>'; }
-      if (this.contentResult.suggestions) { html += '<div><p class="text-indigo-400 font-medium mb-2">Suggestions</p><ul class="space-y-1">'; this.contentResult.suggestions.forEach(s => { html += `<li class="flex items-start gap-2 text-slate-300"><span class="text-indigo-400">&bull;</span>${s}</li>` }); html += '</ul></div>'; }
-      if (this.contentResult.optimizedVersion) html += `<div class="bg-slate-900 rounded-xl p-4"><p class="text-sm text-slate-400 mb-2">Optimized Version</p><p class="text-slate-300 whitespace-pre-wrap">${this.contentResult.optimizedVersion}</p></div>`;
+
+      // Score
+      const score = this.contentResult.overallScore || this.contentResult.score;
+      if (score) {
+        const color = score >= 80 ? 'text-emerald-400' : score >= 60 ? 'text-amber-400' : 'text-red-400';
+        html += `<div class="flex items-center gap-4"><span class="text-slate-400">SEO Score:</span><span class="text-3xl font-bold ${color}">${score}/100</span></div>`;
+      }
+
+      // Strengths
+      if (this.contentResult.strengths?.length) {
+        html += '<div><p class="text-emerald-400 font-medium mb-2">Strengths</p><ul class="space-y-1">';
+        this.contentResult.strengths.forEach(s => { html += `<li class="flex items-start gap-2 text-slate-300"><span class="text-emerald-400">&#10003;</span>${s}</li>` });
+        html += '</ul></div>';
+      }
+
+      // Weaknesses
+      if (this.contentResult.weaknesses?.length) {
+        html += '<div><p class="text-amber-400 font-medium mb-2">Weaknesses</p><ul class="space-y-1">';
+        this.contentResult.weaknesses.forEach(w => { html += `<li class="flex items-start gap-2 text-slate-300"><span class="text-amber-400">!</span>${w}</li>` });
+        html += '</ul></div>';
+      }
+
+      // Details (for improve)
+      if (this.contentResult.details?.length) {
+        html += '<div><p class="text-indigo-400 font-medium mb-2">Analysis</p><ul class="space-y-1">';
+        this.contentResult.details.forEach(d => {
+          const icon = d.status === 'pass' ? '<span class="text-emerald-400">&#10003;</span>' : d.status === 'warn' ? '<span class="text-amber-400">!</span>' : '<span class="text-red-400">&#10007;</span>';
+          html += `<li class="flex items-start gap-2 text-slate-300">${icon}${d.check}</li>`;
+        });
+        html += '</ul></div>';
+      }
+
+      // Meta tags
+      if (this.contentResult.title) {
+        html += `<div class="bg-slate-900 rounded-xl p-4"><p class="text-sm text-slate-400 mb-1">Generated Title Tag (${this.contentResult.titleLength || this.contentResult.title.length} chars) <span class="${this.contentResult.titleStatus === 'Perfect' ? 'text-emerald-400' : 'text-amber-400'}">${this.contentResult.titleStatus || ''}</span></p><p class="text-slate-300 font-medium">${this.contentResult.title}</p></div>`;
+      }
+      if (this.contentResult.description) {
+        html += `<div class="bg-slate-900 rounded-xl p-4"><p class="text-sm text-slate-400 mb-1">Generated Meta Description (${this.contentResult.descLength || this.contentResult.description.length} chars) <span class="${this.contentResult.descStatus === 'Perfect' ? 'text-emerald-400' : 'text-amber-400'}">${this.contentResult.descStatus || ''}</span></p><p class="text-slate-300">${this.contentResult.description}</p></div>`;
+      }
+
+      // Keywords found
+      if (this.contentResult.primaryKeywords?.length) {
+        html += '<div class="bg-slate-900 rounded-xl p-4"><p class="text-sm text-slate-400 mb-2">Primary Keywords Found</p><div class="flex flex-wrap gap-2">';
+        this.contentResult.primaryKeywords.forEach(k => { html += `<span class="px-3 py-1 bg-indigo-500/20 text-indigo-400 rounded-full text-sm font-medium">${k}</span>` });
+        html += '</div></div>';
+      }
+      if (this.contentResult.secondaryKeywords?.length) {
+        html += '<div class="bg-slate-900 rounded-xl p-4"><p class="text-sm text-slate-400 mb-2">Secondary Keywords</p><div class="flex flex-wrap gap-2">';
+        this.contentResult.secondaryKeywords.forEach(k => { html += `<span class="px-3 py-1 bg-slate-700 text-slate-300 rounded-full text-sm">${k}</span>` });
+        html += '</div></div>';
+      }
+      if (this.contentResult.topKeywords?.length) {
+        html += '<div class="bg-slate-900 rounded-xl p-4"><p class="text-sm text-slate-400 mb-2">Top Keywords Found</p><div class="flex flex-wrap gap-2">';
+        this.contentResult.topKeywords.forEach(k => { html += `<span class="px-3 py-1 bg-indigo-500/20 text-indigo-400 rounded-full text-sm">${k}</span>` });
+        html += '</div></div>';
+      }
+
+      // Recommendations
+      if (this.contentResult.recommendations?.length) {
+        html += '<div><p class="text-indigo-400 font-medium mb-2">Recommendations</p><ul class="space-y-1">';
+        this.contentResult.recommendations.forEach(r => { html += `<li class="flex items-start gap-2 text-slate-300"><span class="text-indigo-400">&rarr;</span>${r}</li>` });
+        html += '</ul></div>';
+      }
+
+      // Optimized version
+      if (this.contentResult.optimizedVersion) {
+        html += `<div class="bg-slate-900 rounded-xl p-4"><p class="text-sm text-slate-400 mb-2">Optimized Content</p><p class="text-slate-300 whitespace-pre-wrap leading-relaxed">${this.contentResult.optimizedVersion}</p></div>`;
+      }
+
       html += '</div>';
       return html;
     }
