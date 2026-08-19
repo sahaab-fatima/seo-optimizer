@@ -285,9 +285,9 @@ function seoApp() {
 
           // Make statements more engaging
           r = r.replace(/^this is (a|my)/i, 'This comprehensive guide covers');
-          r = r.replace/^here is (a|my)/i, 'Below you will find');
-          r = r.replace/^here are/i, 'Below you will find');
-          r = r.replace/^i am/i, 'As a professional, I');
+          r = r.replace(/^here is (a|my)/i, 'Below you will find');
+          r = r.replace(/^here are/i, 'Below you will find');
+          r = r.replace(/^i am/i, 'As a professional, I');
           r = r.replace(/^we are/i, 'Our team of experts');
 
           // Clean up
