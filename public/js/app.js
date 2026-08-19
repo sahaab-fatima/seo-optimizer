@@ -161,8 +161,8 @@ function seoApp() {
       const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 0);
       const avgWordsPerSentence = sentences.length > 0 ? Math.round(wordCount / sentences.length) : 0;
 
-      const stopWords = new Set(['the','a','an','is','are','was','were','be','been','being','have','has','had','do','does','did','will','would','could','should','may','might','can','shall','to','of','in','for','on','with','at','by','from','as','into','through','during','before','after','above','below','between','out','off','over','under','again','further','then','once','here','there','when','where','why','how','all','both','each','few','more','most','other','some','such','no','not','only','own','same','so','than','too','very','just','because','but','and','or','if','while','about','up','its','it','this','that','these','those','i','me','my','we','our','you','your','he','him','his','she','her','they','them','their','what','which','who','whom']);
-      const words = content.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter(w => w.length > 3 && !stopWords.has(w));
+      const stopWords = new Set(['the','a','an','is','are','was','were','be','been','being','have','has','had','do','does','did','will','would','could','should','may','might','can','shall','to','of','in','for','on','with','at','by','from','as','into','through','during','before','after','above','below','between','out','off','over','under','again','further','then','once','here','there','when','where','why','how','all','both','each','few','more','most','other','some','such','no','not','only','own','same','so','than','too','very','just','because','but','and','or','if','while','about','up','its','it','this','that','these','those','i','me','my','we','our','you','your','he','him','his','she','her','they','them','their','what','which','who','whom','welcome','page','post','blog','site','website','come','right','place','look','looking','find','found','read','reading','hello','hi','hey','new','old','like','want','need','get','got','make','made','know','think','see','say','said','go','going','come','coming','take','give','use','used','tell','ask','work','seem','feel','try','leave','call','keep','let','begin','show','hear','play','run','move','live','believe','hold','bring','happen','write','provide','sit','stand','lose','pay','meet','include','continue','learn','change','lead','understand','watch','follow','stop','create','speak','read','allow','add','spend','grow','open','walk','win','offer','remember','love','consider','appear','buy','wait','serve','die','send','expect','build','stay','fall','cut','reach','kill','remain','suggest','raise','pass','sell','require','report','decide','pull']);
+      const words = content.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(w => w.length > 3 && !stopWords.has(w));
       const wordFreq = {};
       words.forEach(w => { wordFreq[w] = (wordFreq[w] || 0) + 1; });
       const topWords = Object.entries(wordFreq).sort((a, b) => b[1] - a[1]).slice(0, 10).map(e => e[0]);
@@ -242,62 +242,115 @@ function seoApp() {
         // Generate genuinely improved version
         let improved = content;
 
-        // 1. Fix sentence capitalization
+        // 1. Fix grammar issues
+        improved = improved.replace(/\.\s*([a-z])/g, '. $1'); // space after period
+        improved = improved.replace(/\bi\b/g, 'I'); // capitalize I
+        improved = improved.replace(/\bi\s/g, 'I '); // capitalize I at word start
+
+        // 2. Fix sentence capitalization
         improved = improved.replace(/(^|[.!?]\s+)([a-z])/g, (m, p, c) => p + c.toUpperCase());
 
-        // 2. Fix double spaces
+        // 3. Fix double spaces and punctuation
         improved = improved.replace(/\s{2,}/g, ' ');
+        improved = improved.replace(/\.,/g, '.');
+        improved = improved.replace(/,,/g, ',');
+        improved = improved.replace(/\s+\./g, '.');
 
-        // 3. Add proper paragraph breaks (every 3-4 sentences)
-        const parts = improved.split(/(?<=[.!?])\s+/);
-        if (parts.length > 3) {
-          const paraSize = parts.length > 8 ? 4 : 3;
-          improved = '';
-          for (let i = 0; i < parts.length; i++) {
-            improved += parts[i] + (i < parts.length - 1 ? ' ' : '');
-            if ((i + 1) % paraSize === 0 && i < parts.length - 1) improved += '\n\n';
+        // 4. Split into sentences for rewriting
+        let rawSentences = improved.match(/[^.!?]+[.!?]+/g) || [improved];
+        rawSentences = rawSentences.map(s => s.trim()).filter(s => s.length > 0);
+
+        // 5. Rewrite weak/boring sentences
+        const rewritten = rawSentences.map(s => {
+          let r = s;
+          const rl = r.toLowerCase();
+
+          // Handle "page.i" type issues (period stuck to word)
+          r = r.replace(/\.([A-Za-z])/g, '. $1');
+
+          // "Welcome to my page" type → more engaging
+          if (rl.match(/^welcome to my (page|blog|site|website)/)) {
+            r = r.replace(/^(welcome to my (page|blog|site|website))/i, 'Welcome');
           }
+          if (rl.match(/^welcome to my (page|blog|site|website)\.?$/i)) {
+            return ''; // skip standalone "Welcome to my page." - will be replaced by intro
+          }
+          r = r.replace(/^(welcome to (my )?(page|blog|site|website))\.?\s*/i, '');
+
+          // Fix "i post about" → better phrasing
+          r = r.replace(/\bi (post|write|share|talk|discuss) about\b/gi, 'We cover');
+          r = r.replace(/\bi (am|'m) (a|an) (blogger|writer|author|creator|content creator)/gi, 'As a professional content creator, I specialize in');
+
+          // "page.i" type fix (already handled above)
+
+          // Make statements more engaging
+          r = r.replace(/^this is (a|my)/i, 'This comprehensive guide covers');
+          r = r.replace/^here is (a|my)/i, 'Below you will find');
+          r = r.replace/^here are/i, 'Below you will find');
+          r = r.replace/^i am/i, 'As a professional, I');
+          r = r.replace(/^we are/i, 'Our team of experts');
+
+          // Clean up
+          r = r.trim();
+          r = r.replace(/^\.\s*/, '');
+          r = r.replace(/\s{2,}/g, ' ');
+          if (r && !r.match(/[.!?]$/)) r += '.';
+
+          return r;
+        }).filter(s => s.length > 0);
+
+        // 6. Rebuild improved content
+        let finalSentences = [];
+
+        // Detect topic phrase (try to find a meaningful 2-3 word phrase)
+        let topicPhrase = mainKeyword;
+        const contentLower = content.toLowerCase();
+        // Try to find "about X" or "on X" phrases
+        const topicMatch = contentLower.match(/(?:about|on|regarding|concerning|covering)\s+([a-z]+(?:\s+[a-z]+){0,2})/);
+        if (topicMatch && topicMatch[1].split(' ').some(w => w.length > 3 && !stopWords.has(w))) {
+          topicPhrase = topicMatch[1].trim();
         }
 
-        // 4. Convert long sentences to shorter ones
-        improved = improved.replace(/,\s*(and|but|or|because|however|moreover|furthermore|additionally)\s*/gi, '.\n$1 '.replace(/\n/g, ' '));
-
-        // 5. Add keyword naturally if missing
-        if (!improved.toLowerCase().includes(mainKeyword)) {
-          improved = `Understanding ${mainKeyword} is essential. ${improved.charAt(0).toUpperCase() + improved.slice(1)}`;
+        // Add engaging intro
+        if (topicPhrase && topicPhrase.length > 3) {
+          finalSentences.push(`Discover everything you need to know about ${topicPhrase}.`);
         }
 
-        // 6. Ensure starts with capital
-        if (improved[0]) improved = improved[0].toUpperCase() + improved.slice(1);
+        // Add rewritten sentences
+        finalSentences.push(...rewritten);
 
-        // 7. Make sure it ends with proper punctuation
+        // Add engaging conclusion
+        if (topicPhrase && topicPhrase.length > 3) {
+          finalSentences.push(`Stay updated with the latest ${topicPhrase} insights and expert analysis.`);
+        }
+
+        // 7. Build final content with paragraph breaks
+        if (finalSentences.length > 4) {
+          const mid = Math.ceil(finalSentences.length / 2);
+          const firstHalf = finalSentences.slice(0, mid).join(' ');
+          const secondHalf = finalSentences.slice(mid).join(' ');
+          improved = firstHalf + '\n\n' + secondHalf;
+        } else {
+          improved = finalSentences.join(' ');
+        }
+
+        // 8. Final cleanup
+        improved = improved.replace(/\s+/g, ' ').trim();
         if (improved.length > 0 && !improved.match(/[.!?]$/)) improved += '.';
-
-        // 8. Add transition words to improve flow
-        const weakStarters = ['it is', 'there are', 'this is', 'that is', 'here is'];
-        weakStarters.forEach(starter => {
-          const regex = new RegExp('\\b' + starter + '\\b', 'gi');
-          improved = improved.replace(regex, (match) => {
-            const transitions = ['Notably,', 'Importantly,', 'Significantly,', 'Essentially,'];
-            return transitions[Math.floor(Math.random() * transitions.length)] + ' ';
-          });
-        });
-
-        // 9. Bold the main keyword in output for emphasis
-        const boldImproved = improved;
+        improved = improved.charAt(0).toUpperCase() + improved.slice(1);
 
         result = {
           score: Math.min(95, Math.max(15, score)),
           details,
-          optimizedVersion: boldImproved,
+          optimizedVersion: improved,
           keywordsFound: topWords.slice(0, 5),
           changes: [
-            'Fixed sentence capitalization',
-            mainKeyword && !content.toLowerCase().includes(mainKeyword) ? `Added "${mainKeyword}" keyword naturally` : `Kept "${mainKeyword}" keyword usage`,
+            'Fixed grammar and punctuation',
+            `Rewrote weak sentences for engagement`,
+            mainKeyword && !content.toLowerCase().includes(mainKeyword) ? `Added "${mainKeyword}" keyword naturally` : `Used "${topicPhrase || mainKeyword}" as primary keyword`,
             improved.split('\n\n').length > 1 ? 'Added paragraph breaks for readability' : 'Improved text structure',
             'Removed double spaces and fixed formatting',
-            'Improved punctuation and sentence flow',
-            'Ensured content starts and ends properly'
+            'Added engaging introduction and conclusion'
           ],
           recommendations: [
             `Target keyword: "${mainKeyword}" - use it 2-3% of the time`,
