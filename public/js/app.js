@@ -61,38 +61,25 @@ function seoApp() {
       this.currentTab = 'analyze';
       this.isLoading = true; this.error = ''; this.analysisResult = null;
 
-      // Method 1: Google PageSpeed directly (supports CORS)
+      // Method 1: Server-side fetch via Netlify function (fast, no CORS issues)
       try {
-        const psiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&category=seo&strategy=mobile`;
-        const res = await fetch(psiUrl);
-        const data = await res.json();
-        if (data.lighthouseResult) {
-          this.analysisResult = this.parsePsiResult(data, url);
-          this.saveToHistory({ url, score: this.analysisResult.score, createdAt: new Date().toISOString() });
-          this.isLoading = false;
-          this.$nextTick(() => { lucide.createIcons() });
-          return;
-        }
-      } catch (e) { console.log('Direct PSI failed:', e); }
-
-      // Method 2: Via Netlify function
-      try {
-        const res = await fetch('/.netlify/functions/pagespeed', {
+        const res = await fetch('/.netlify/functions/analyze', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ url })
         });
         const json = await res.json();
-        if (json.success && json.data && json.data.lighthouseResult) {
-          this.analysisResult = this.parsePsiResult(json.data, url);
-          this.saveToHistory({ url, score: this.analysisResult.score, createdAt: new Date().toISOString() });
+        if (json.success && json.data) {
+          this.analysisResult = json.data;
+          this.saveToHistory({ url, score: json.data.score, createdAt: new Date().toISOString() });
           this.isLoading = false;
           this.$nextTick(() => { lucide.createIcons() });
           return;
         }
-      } catch (e) { console.log('Function PSI failed:', e); }
+        if (json.error) throw new Error(json.error);
+      } catch (e) { console.log('Function failed:', e.message); }
 
-      // Method 3: CORS proxy
+      // Method 2: CORS proxy fallback
       const proxies = [
         `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
         `https://corsproxy.io/?${encodeURIComponent(url)}`
@@ -116,55 +103,6 @@ function seoApp() {
       this.error = 'Could not analyze. Try again or try a different URL.';
       this.isLoading = false;
       this.$nextTick(() => { lucide.createIcons() });
-    },
-
-    parsePsiResult(data, url) {
-      const lr = data.lighthouseResult;
-      const audits = lr.audits || {};
-      const seo = lr.categories?.seo || {};
-
-      const issues = [];
-      let score = Math.round((seo.score || 0) * 100);
-
-      const check = (id, errType, cat, msg, fix) => {
-        const a = audits[id];
-        if (a && a.score !== null && a.score < 1) {
-          issues.push({ type: errType, category: cat, message: msg, suggestion: fix });
-        }
-      };
-
-      check('document-title', 'error', 'Title', 'Missing or invalid page title', 'Add a descriptive title between 50-60 characters');
-      check('meta-description', 'error', 'Meta Description', 'Missing meta description', 'Add a compelling description 150-160 chars');
-      check('heading-order', 'warning', 'Headings', 'Heading order is incorrect', 'Use H1 > H2 > H3 in order');
-      check('image-alt', 'warning', 'Images', 'Images missing alt text', 'Add descriptive alt text to all images');
-      check('link-text', 'warning', 'Links', 'Links missing descriptive text', 'Use meaningful link text');
-      check('crawlable-anchors', 'info', 'Technical', 'Some links may not be crawlable', 'Use standard HTML links');
-      check('is-crawlable', 'error', 'Technical', 'Page may not be crawlable', 'Check robots.txt and meta robots');
-      check('robots-txt', 'error', 'Technical', 'Issues with robots.txt', 'Verify robots.txt allows crawling');
-      check('hreflang', 'info', 'Technical', 'Missing hreflang tags', 'Add hreflang for international audiences');
-      check('canonical', 'info', 'Technical', 'Missing canonical tag', 'Add canonical link');
-      check('structured-data', 'info', 'Technical', 'No structured data found', 'Add JSON-LD structured data');
-
-      if (audits['document-title']?.score === 1) issues.push({ type: 'pass', category: 'Title', message: 'Title tag present', suggestion: '' });
-      if (audits['meta-description']?.score === 1) issues.push({ type: 'pass', category: 'Meta Description', message: 'Meta description present', suggestion: '' });
-      if (audits['image-alt']?.score === 1) issues.push({ type: 'pass', category: 'Images', message: 'All images have alt text', suggestion: '' });
-
-      const recs = [];
-      if (audits['document-title']?.score === 1) recs.push('Title tag present');
-      if (audits['meta-description']?.score === 1) recs.push('Meta description present');
-      if (audits['image-alt']?.score === 1) recs.push('Image alt text present');
-      if (score >= 80) recs.push('Good overall SEO score');
-      if (score < 50) recs.push('Needs significant SEO improvements');
-
-      const desc = audits['meta-description']?.displayValue || '';
-      const titleLen = audits['document-title']?.details?.items?.[0]?.title?.length || 0;
-
-      return {
-        url, score, issues,
-        stats: { titleLength: titleLen, metaDescLength: desc.length, h1Count: 0, h2Count: 0, linkCount: 0, imageCount: 0, imagesWithoutAlt: 0, wordCount: 0 },
-        recommendations: recs,
-        psiDetails: true
-      };
     },
 
     // Local HTML analyzer (client-side)
