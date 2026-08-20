@@ -1,11 +1,4 @@
 node_modules/
 .env
 .netlify/
-server.js
-server/
 data/
-netlify/functions/db.js
-netlify/functions/history.js
-netlify/functions/keywords.js
-netlify/functions/optimize.js
-netlify/functions/utils.js

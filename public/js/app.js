@@ -12,8 +12,21 @@ function seoApp() {
     contentResult: null,
     keywordResult: null,
     history: [],
+    // Auth
+    user: null,
+    token: null,
+    showAuthModal: false,
+    authMode: 'login',
+    authName: '',
+    authEmail: '',
+    authPassword: '',
+    authError: '',
+    authLoading: false,
 
     init() {
+      // Load token from localStorage
+      this.token = localStorage.getItem('seo_token');
+      this.user = JSON.parse(localStorage.getItem('seo_user') || 'null');
       this.loadHistory();
       this.$nextTick(() => { lucide.createIcons() });
       this.$watch('currentTab', () => { this.$nextTick(() => { lucide.createIcons() }) });
@@ -22,6 +35,53 @@ function seoApp() {
       this.$watch('keywordResult', () => { this.$nextTick(() => { lucide.createIcons() }) });
       this.$watch('isLoading', () => { this.$nextTick(() => { lucide.createIcons() }) });
       this.$watch('error', () => { this.$nextTick(() => { lucide.createIcons() }) });
+      this.$watch('showAuthModal', () => { this.$nextTick(() => { lucide.createIcons() }) });
+    },
+
+    getAuthHeaders() {
+      return this.token ? { 'Authorization': `Bearer ${this.token}`, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
+    },
+
+    async login() {
+      this.authLoading = true; this.authError = '';
+      try {
+        const res = await fetch(`${API_BASE}/api/auth/login`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: this.authEmail, password: this.authPassword })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        this.token = data.token; this.user = data.user;
+        localStorage.setItem('seo_token', this.token);
+        localStorage.setItem('seo_user', JSON.stringify(this.user));
+        this.showAuthModal = false; this.authEmail = ''; this.authPassword = '';
+        this.loadHistory();
+      } catch (e) { this.authError = e.message; }
+      this.authLoading = false;
+    },
+
+    async register() {
+      this.authLoading = true; this.authError = '';
+      try {
+        const res = await fetch(`${API_BASE}/api/auth/register`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: this.authName, email: this.authEmail, password: this.authPassword })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        this.token = data.token; this.user = data.user;
+        localStorage.setItem('seo_token', this.token);
+        localStorage.setItem('seo_user', JSON.stringify(this.user));
+        this.showAuthModal = false; this.authName = ''; this.authEmail = ''; this.authPassword = '';
+      } catch (e) { this.authError = e.message; }
+      this.authLoading = false;
+    },
+
+    logout() {
+      this.user = null; this.token = null;
+      localStorage.removeItem('seo_token');
+      localStorage.removeItem('seo_user');
+      this.history = [];
     },
 
     resetResults() {
@@ -38,7 +98,14 @@ function seoApp() {
       return 'Poor';
     },
 
-    loadHistory() {
+    async loadHistory() {
+      if (this.token) {
+        try {
+          const res = await fetch(`${API_BASE}/api/history/analyses`, { headers: this.getAuthHeaders() });
+          const data = await res.json();
+          if (data.success) { this.history = data.data; return; }
+        } catch (e) { console.log('Backend history failed, using local'); }
+      }
       try {
         const stored = localStorage.getItem('seo_history');
         this.history = stored ? JSON.parse(stored) : [];
@@ -55,14 +122,32 @@ function seoApp() {
     async analyzeUrl() {
       if (!this.urlInput) return;
       let url = this.urlInput.trim();
-      // Accept any format: with http, https, or just domain
       if (!url.match(/^https?:\/\//i)) url = 'https://' + url;
       try { new URL(url); } catch { this.error = 'Please enter a valid URL'; return; }
 
       this.currentTab = 'analyze';
       this.isLoading = true; this.error = ''; this.analysisResult = null;
 
-      // Method 1: Server-side fetch via Netlify function (fast, no CORS issues)
+      // Method 1: Backend API (best - server-side fetch, no CORS)
+      try {
+        const res = await fetch(`${API_BASE}/api/analyze`, {
+          method: 'POST',
+          headers: this.getAuthHeaders(),
+          body: JSON.stringify({ url })
+        });
+        const json = await res.json();
+        if (json.success && json.data) {
+          this.analysisResult = json.data.analysis || json.data;
+          this.saveToHistory({ url, score: this.analysisResult.score, createdAt: new Date().toISOString() });
+          if (this.user) { this.user.analysesCount = (this.user.analysesCount || 0) + 1; localStorage.setItem('seo_user', JSON.stringify(this.user)); }
+          this.isLoading = false;
+          this.$nextTick(() => { lucide.createIcons() });
+          return;
+        }
+        if (json.error) throw new Error(json.error);
+      } catch (e) { console.log('Backend API failed, trying fallback:', e.message); }
+
+      // Method 2: Netlify function fallback
       try {
         const res = await fetch('/.netlify/functions/analyze', {
           method: 'POST',
@@ -77,10 +162,9 @@ function seoApp() {
           this.$nextTick(() => { lucide.createIcons() });
           return;
         }
-        if (json.error) throw new Error(json.error);
-      } catch (e) { console.log('Function failed:', e.message); }
+      } catch (e) { console.log('Netlify function failed:', e.message); }
 
-      // Method 2: CORS proxy fallback
+      // Method 3: CORS proxy fallback
       const proxies = [
         `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
         `https://corsproxy.io/?${encodeURIComponent(url)}`
@@ -174,10 +258,27 @@ function seoApp() {
     },
 
     // Content Optimization
-    optimizeContent(type) {
+    async optimizeContent(type) {
       if (!this.contentInput) return;
       this.isLoading = true; this.error = ''; this.contentResult = null;
 
+      // Try backend API first (real AI)
+      try {
+        const res = await fetch(`${API_BASE}/api/optimize`, {
+          method: 'POST',
+          headers: this.getAuthHeaders(),
+          body: JSON.stringify({ content: this.contentInput, type })
+        });
+        const json = await res.json();
+        if (json.success && json.data) {
+          this.contentResult = { type, ...json.data };
+          this.isLoading = false;
+          this.$nextTick(() => { lucide.createIcons() });
+          return;
+        }
+      } catch (e) { console.log('Backend optimize failed, using local:', e.message); }
+
+      // Fallback: client-side logic
       const content = this.contentInput;
       const wordCount = content.split(/\s+/).filter(w => w.length > 0).length;
       const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 0);
@@ -435,11 +536,28 @@ function seoApp() {
       this.$nextTick(() => { lucide.createIcons() });
     },
 
-    // Keyword Research - local
-    researchKeywords() {
+    // Keyword Research
+    async researchKeywords() {
       if (!this.keywordInput) return;
       this.isLoading = true; this.error = ''; this.keywordResult = null;
 
+      // Try backend API first (real AI keywords)
+      try {
+        const res = await fetch(`${API_BASE}/api/keywords`, {
+          method: 'POST',
+          headers: this.getAuthHeaders(),
+          body: JSON.stringify({ topic: this.keywordInput, count: 10 })
+        });
+        const json = await res.json();
+        if (json.success && json.data) {
+          this.keywordResult = json.data;
+          this.isLoading = false;
+          this.$nextTick(() => { lucide.createIcons() });
+          return;
+        }
+      } catch (e) { console.log('Backend keywords failed, using local:', e.message); }
+
+      // Fallback: local keyword generation
       const t = this.keywordInput.toLowerCase().trim();
       this.keywordResult = {
         keywords: [
