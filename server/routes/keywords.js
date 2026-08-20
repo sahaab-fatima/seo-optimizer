@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const Keyword = require('../models/Keyword');
+
+function isDbReady() {
+  return require('mongoose').connection.readyState === 1;
+}
 
 router.post('/', async (req, res) => {
   try {
@@ -13,14 +16,8 @@ router.post('/', async (req, res) => {
     const completion = await openai.chat.completions.create({
       model: 'mimo-v2.5',
       messages: [
-        {
-          role: 'system',
-          content: 'You are a keyword research expert. Return JSON with: keywords (array of {keyword, searchVolume: high/medium/low, difficulty: high/medium/low, relevance: 0-100}), longTailKeywords (array), questions (array). Only return valid JSON.'
-        },
-        {
-          role: 'user',
-          content: `Generate ${count} keyword ideas for: "${topic}"`
-        }
+        { role: 'system', content: 'You are a keyword research expert. Return JSON with: keywords (array of {keyword, searchVolume: high/medium/low, difficulty: high/medium/low, relevance: 0-100}), longTailKeywords (array), questions (array). Only return valid JSON.' },
+        { role: 'user', content: `Generate ${count} keyword ideas for: "${topic}"` }
       ],
       temperature: 0.7,
       max_tokens: 2000
@@ -31,19 +28,21 @@ router.post('/', async (req, res) => {
     const jsonMatch = responseText.match(/\{[\s\S]*\}/);
     if (jsonMatch) { result = JSON.parse(jsonMatch[0]); } else { result = { keywords: [], longTailKeywords: [], questions: [] }; }
 
-    // Save if user is authenticated
-    let userId = null;
-    const token = req.header('Authorization')?.replace('Bearer ', '');
-    if (token) {
+    // Save if DB available
+    if (isDbReady()) {
       try {
-        const jwt = require('jsonwebtoken');
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'seo-boost-secret-key-2024');
-        userId = decoded.userId;
+        let userId = null;
+        const token = req.header('Authorization')?.replace('Bearer ', '');
+        if (token) {
+          const jwt = require('jsonwebtoken');
+          const decoded = jwt.verify(token, process.env.JWT_SECRET || 'seo-boost-secret-key-2024');
+          userId = decoded.userId;
+        }
+        const Keyword = require('../models/Keyword');
+        const saved = new Keyword({ topic, ...result, userId });
+        await saved.save();
       } catch {}
     }
-
-    const saved = new Keyword({ topic, ...result, userId });
-    await saved.save();
 
     res.json({ success: true, data: result });
   } catch (error) {
