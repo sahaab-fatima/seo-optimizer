@@ -21,7 +21,7 @@ router.post('/', async (req, res) => {
       ],
       temperature: 0.7,
       max_tokens: 2000
-    });
+    }, { timeout: 15000 });
 
     const responseText = completion.choices[0].message.content || '{}';
     let result;

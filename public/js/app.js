@@ -130,11 +130,14 @@ function seoApp() {
 
       // Method 1: Backend API (best - server-side fetch, no CORS)
       try {
+        const ctrl0 = new AbortController();
+        const tid0 = setTimeout(() => ctrl0.abort(), 10000);
         const res = await fetch(`${API_BASE}/api/analyze`, {
-          method: 'POST',
-          headers: this.getAuthHeaders(),
-          body: JSON.stringify({ url })
+          method: 'POST', headers: this.getAuthHeaders(),
+          body: JSON.stringify({ url }),
+          signal: ctrl0.signal
         });
+        clearTimeout(tid0);
         const json = await res.json();
         if (json.success && json.data) {
           this.analysisResult = json.data.analysis || json.data;
@@ -262,13 +265,16 @@ function seoApp() {
       if (!this.contentInput) return;
       this.isLoading = true; this.error = ''; this.contentResult = null;
 
-      // Try backend API first (real AI)
+      // Try backend API first (real AI) - 10s timeout
       try {
+        const ctrl = new AbortController();
+        const tid = setTimeout(() => ctrl.abort(), 10000);
         const res = await fetch(`${API_BASE}/api/optimize`, {
-          method: 'POST',
-          headers: this.getAuthHeaders(),
-          body: JSON.stringify({ content: this.contentInput, type })
+          method: 'POST', headers: this.getAuthHeaders(),
+          body: JSON.stringify({ content: this.contentInput, type }),
+          signal: ctrl.signal
         });
+        clearTimeout(tid);
         const json = await res.json();
         if (json.success && json.data) {
           this.contentResult = { type, ...json.data };
@@ -541,13 +547,16 @@ function seoApp() {
       if (!this.keywordInput) return;
       this.isLoading = true; this.error = ''; this.keywordResult = null;
 
-      // Try backend API first (real AI keywords)
+      // Try backend API first (real AI keywords) - 10s timeout
       try {
+        const ctrl2 = new AbortController();
+        const tid2 = setTimeout(() => ctrl2.abort(), 10000);
         const res = await fetch(`${API_BASE}/api/keywords`, {
-          method: 'POST',
-          headers: this.getAuthHeaders(),
-          body: JSON.stringify({ topic: this.keywordInput, count: 10 })
+          method: 'POST', headers: this.getAuthHeaders(),
+          body: JSON.stringify({ topic: this.keywordInput, count: 10 }),
+          signal: ctrl2.signal
         });
+        clearTimeout(tid2);
         const json = await res.json();
         if (json.success && json.data) {
           this.keywordResult = json.data;
