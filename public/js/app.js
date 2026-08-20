@@ -116,38 +116,60 @@ function seoApp() {
         const canonical = doc.querySelector('link[rel="canonical"]')?.getAttribute('href') || '';
         const ogTitle = doc.querySelector('meta[property="og:title"]')?.getAttribute('content') || '';
         const ogDesc = doc.querySelector('meta[property="og:description"]')?.getAttribute('content') || '';
+        const ogImage = doc.querySelector('meta[property="og:image"]')?.getAttribute('content') || '';
+        const viewport = doc.querySelector('meta[name="viewport"]')?.getAttribute('content') || '';
         const h1 = [...doc.querySelectorAll('h1')].map(el => el.textContent.trim()).filter(Boolean);
         const h2 = [...doc.querySelectorAll('h2')].map(el => el.textContent.trim()).filter(Boolean);
+        const h3 = [...doc.querySelectorAll('h3')].map(el => el.textContent.trim()).filter(Boolean);
         const images = [...doc.querySelectorAll('img')].map(el => ({ alt: el.getAttribute('alt') || '' }));
         const textContent = doc.body?.textContent?.replace(/\s+/g, ' ').trim() || '';
         const wordCount = textContent.split(/\s+/).filter(w => w.length > 0).length;
         const imagesWithoutAlt = images.filter(img => !img.alt).length;
+        const imagesWithAlt = images.length - imagesWithoutAlt;
+        const linkCount = [...doc.querySelectorAll('a')].length;
+        const htmlEl = doc.querySelector('html');
+        const lang = htmlEl?.getAttribute('lang') || null;
 
         const issues = [];
+        const passed = [];
         let score = 100;
-        if (!title) { issues.push({ type: 'error', category: 'Title', message: 'Missing page title', suggestion: 'Add a descriptive title between 50-60 characters' }); score -= 20; }
-        else if (title.length < 30) { issues.push({ type: 'warning', category: 'Title', message: `Title too short (${title.length} chars)`, suggestion: 'Aim for 50-60 characters' }); score -= 10; }
-        else if (title.length > 60) { issues.push({ type: 'warning', category: 'Title', message: `Title too long (${title.length} chars)`, suggestion: 'Keep under 60 characters' }); score -= 5; }
-        if (!metaDesc) { issues.push({ type: 'error', category: 'Meta Description', message: 'Missing meta description', suggestion: 'Add a compelling description 150-160 chars' }); score -= 15; }
-        else if (metaDesc.length < 120) { issues.push({ type: 'warning', category: 'Meta Description', message: `Too short (${metaDesc.length} chars)`, suggestion: 'Aim for 150-160 characters' }); score -= 5; }
-        if (h1.length === 0) { issues.push({ type: 'error', category: 'Headings', message: 'No H1 tag found', suggestion: 'Add exactly one H1 tag' }); score -= 15; }
-        else if (h1.length > 1) { issues.push({ type: 'warning', category: 'Headings', message: `Multiple H1 tags (${h1.length})`, suggestion: 'Use only one H1 per page' }); score -= 5; }
-        if (h2.length === 0 && h1.length > 0) { issues.push({ type: 'info', category: 'Headings', message: 'No H2 tags found', suggestion: 'Add H2 tags to organize content' }); score -= 3; }
-        if (imagesWithoutAlt > 0) { issues.push({ type: 'warning', category: 'Images', message: `${imagesWithoutAlt} image(s) missing alt text`, suggestion: 'Add descriptive alt text' }); score -= Math.min(imagesWithoutAlt * 2, 10); }
-        if (!ogTitle) { issues.push({ type: 'info', category: 'Social', message: 'Missing og:title', suggestion: 'Add for better social sharing' }); score -= 2; }
-        if (!ogDesc) { issues.push({ type: 'info', category: 'Social', message: 'Missing og:description', suggestion: 'Add for social previews' }); score -= 2; }
-        if (!canonical) { issues.push({ type: 'info', category: 'Technical', message: 'No canonical URL', suggestion: 'Add canonical link' }); score -= 3; }
-        if (wordCount < 300) { issues.push({ type: 'warning', category: 'Content', message: `Low word count (${wordCount})`, suggestion: 'Aim for at least 300 words' }); score -= 5; }
+
+        if (!title) { issues.push({ type: 'error', category: 'Title', message: 'Missing page title', suggestion: 'Add a title between 50-60 characters' }); score -= 12; }
+        else { passed.push('Title tag present'); if (title.length < 30) { issues.push({ type: 'warning', category: 'Title', message: `Title too short (${title.length} chars)`, suggestion: 'Aim for 50-60 characters' }); score -= 4; } else if (title.length > 60) { issues.push({ type: 'warning', category: 'Title', message: `Title too long (${title.length} chars)`, suggestion: 'Keep under 60 characters' }); score -= 3; } else { passed.push('Title length is perfect'); } }
+        if (!metaDesc) { issues.push({ type: 'error', category: 'Meta Description', message: 'Missing meta description', suggestion: 'Add a description 150-160 chars' }); score -= 10; }
+        else { passed.push('Meta description present'); if (metaDesc.length < 120) { issues.push({ type: 'warning', category: 'Meta Description', message: `Too short (${metaDesc.length} chars)`, suggestion: 'Aim for 150-160 characters' }); score -= 3; } else if (metaDesc.length > 160) { issues.push({ type: 'info', category: 'Meta Description', message: `Slightly long (${metaDesc.length} chars)`, suggestion: 'Keep under 160 characters' }); score -= 2; } else { passed.push('Meta description length is good'); } }
+        if (h1.length === 0) { issues.push({ type: 'error', category: 'Headings', message: 'No H1 tag found', suggestion: 'Add exactly one H1 tag' }); score -= 10; } else { passed.push('H1 tag present'); if (h1.length > 1) { issues.push({ type: 'warning', category: 'Headings', message: `Multiple H1 tags (${h1.length})`, suggestion: 'Use only one H1 per page' }); score -= 3; } }
+        if (h2.length === 0 && h1.length > 0) { issues.push({ type: 'info', category: 'Headings', message: 'No H2 tags', suggestion: 'Add H2 subheadings to organize content' }); score -= 2; } else if (h2.length > 0) { passed.push('H2 subheadings present'); }
+        if (h3.length > 0) passed.push('Good heading hierarchy (H3)');
+        if (images.length === 0) { issues.push({ type: 'info', category: 'Images', message: 'No images found', suggestion: 'Add relevant images for better engagement' }); score -= 2; } else { if (imagesWithoutAlt > 0) { issues.push({ type: 'warning', category: 'Images', message: `${imagesWithoutAlt} image(s) missing alt text`, suggestion: 'Add alt text to all images' }); score -= Math.min(imagesWithoutAlt * 2, 6); } if (imagesWithAlt > 0) passed.push(`${imagesWithAlt} image(s) with alt text`); }
+        if (!ogTitle) { issues.push({ type: 'info', category: 'Social', message: 'Missing og:title', suggestion: 'Add for better social sharing' }); score -= 2; } else { passed.push('og:title present'); }
+        if (!ogDesc) { issues.push({ type: 'info', category: 'Social', message: 'Missing og:description', suggestion: 'Add for social previews' }); score -= 2; } else { passed.push('og:description present'); }
+        if (!ogImage) { issues.push({ type: 'info', category: 'Social', message: 'Missing og:image', suggestion: 'Add an image for social previews' }); score -= 2; } else { passed.push('og:image present'); }
+        if (!canonical) { issues.push({ type: 'info', category: 'Technical', message: 'No canonical URL', suggestion: 'Add canonical link' }); score -= 2; } else { passed.push('Canonical URL set'); }
+        if (!viewport) { issues.push({ type: 'warning', category: 'Technical', message: 'Missing viewport meta', suggestion: 'Add viewport for mobile responsiveness' }); score -= 3; } else { passed.push('Viewport meta tag present'); }
+        if (!lang) { issues.push({ type: 'info', category: 'Technical', message: 'Missing lang attribute on <html>', suggestion: 'Add lang="en" for accessibility' }); score -= 1; } else { passed.push('Language attribute set'); }
+        if (wordCount < 150) { issues.push({ type: 'warning', category: 'Content', message: `Very thin content (${wordCount} words)`, suggestion: 'Aim for 300+ words' }); score -= 4; } else if (wordCount < 300) { issues.push({ type: 'info', category: 'Content', message: `Light content (${wordCount} words)`, suggestion: 'Consider adding more detailed content' }); score -= 2; } else if (wordCount > 500) { passed.push(`Good content length (${wordCount} words)`); }
+        if (linkCount === 0) { issues.push({ type: 'info', category: 'Links', message: 'No links found', suggestion: 'Add internal and external links' }); score -= 2; } else { passed.push(`${linkCount} links found`); }
+
+        score = Math.max(0, Math.min(100, score));
 
         const recs = [];
-        if (h1.length > 0) recs.push('H1 tag present');
-        if (wordCount > 500) recs.push('Good content length');
-        if (metaDesc) recs.push('Meta description present');
-        if (title) recs.push('Title tag present');
+        if (!title) recs.push('Add a clear, descriptive title tag (50-60 chars)');
+        else if (title.length < 50) recs.push('Expand your title to 50-60 characters');
+        if (!metaDesc) recs.push('Write a compelling meta description (150-160 chars)');
+        else if (metaDesc.length < 150) recs.push('Expand meta description to 150-160 characters');
+        if (h1.length === 0) recs.push('Add one H1 tag with your main keyword');
+        if (h2.length === 0) recs.push('Use H2 subheadings to organize your content');
+        if (imagesWithoutAlt > 0) recs.push('Add descriptive alt text to all images');
+        if (!ogTitle || !ogDesc) recs.push('Add Open Graph tags for social sharing');
+        if (!canonical) recs.push('Add a canonical URL');
+        if (wordCount < 300) recs.push('Expand content to 300+ words');
+        if (!viewport) recs.push('Add viewport meta tag for mobile optimization');
+        if (recs.length === 0) recs.push('Your page is well optimized! Keep monitoring.');
 
-        return { url, score: Math.max(0, Math.min(100, score)), issues, stats: { titleLength: title.length, metaDescLength: metaDesc.length, h1Count: h1.length, h2Count: h2.length, linkCount: 0, imageCount: images.length, imagesWithoutAlt, wordCount }, recommendations: recs };
+        return { url, score, issues, passed, stats: { titleLength: title.length, metaDescLength: metaDesc.length, h1Count: h1.length, h2Count: h2.length, h3Count: h3.length, linkCount, imageCount: images.length, imagesWithoutAlt, imagesWithAlt, wordCount, hasOgTitle: !!ogTitle, hasOgDesc: !!ogDesc, hasOgImage: !!ogImage, hasCanonical: !!canonical, hasViewport: !!viewport, lang }, recommendations: recs };
       } catch (e) {
-        return { url, score: 0, issues: [{ type: 'error', category: 'Error', message: 'Could not parse HTML', suggestion: 'Check if HTML is valid' }], stats: { titleLength: 0, metaDescLength: 0, h1Count: 0, h2Count: 0, linkCount: 0, imageCount: 0, imagesWithoutAlt: 0, wordCount: 0 }, recommendations: [] };
+        return { url, score: 0, issues: [{ type: 'error', category: 'Error', message: 'Could not parse HTML', suggestion: 'Check if HTML is valid' }], passed: [], stats: { titleLength: 0, metaDescLength: 0, h1Count: 0, h2Count: 0, h3Count: 0, linkCount: 0, imageCount: 0, imagesWithoutAlt: 0, imagesWithAlt: 0, wordCount: 0, hasOgTitle: false, hasOgDesc: false, hasOgImage: false, hasCanonical: false, hasViewport: false, lang: null }, recommendations: [] };
       }
     },
 

@@ -124,6 +124,18 @@
                     <div class="bg-slate-800/50 rounded-xl border border-slate-700/50 p-3 sm:p-4"><p class="text-xs sm:text-sm text-slate-400 mb-1">Words</p><p class="text-xl sm:text-2xl font-bold" :class="analysisResult.stats.wordCount>=300?'text-emerald-400':'text-amber-400'" x-text="analysisResult.stats.wordCount"></p></div>
                     <div class="bg-slate-800/50 rounded-xl border border-slate-700/50 p-3 sm:p-4"><p class="text-xs sm:text-sm text-slate-400 mb-1">Images</p><p class="text-xl sm:text-2xl font-bold text-white" x-text="analysisResult.stats.imageCount"></p></div>
                 </div>
+                <!-- Passed Checks -->
+                <div x-show="analysisResult.passed && analysisResult.passed.length > 0" class="bg-slate-800/50 rounded-2xl border border-emerald-500/30 p-4 sm:p-6">
+                    <h3 class="text-base sm:text-lg font-semibold text-emerald-400 mb-3 sm:mb-4">Passed Checks</h3>
+                    <div class="flex flex-wrap gap-2">
+                        <template x-for="(check, idx) in analysisResult.passed" :key="idx">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/30 rounded-full text-emerald-300 text-xs sm:text-sm">
+                                <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
+                                <span x-text="check"></span>
+                            </span>
+                        </template>
+                    </div>
+                </div>
                 <!-- Issues -->
                 <div class="bg-slate-800/50 rounded-2xl border border-slate-700/50 p-4 sm:p-6">
                     <h3 class="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4">Issues Found</h3>
