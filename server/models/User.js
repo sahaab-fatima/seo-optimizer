@@ -5,9 +5,11 @@ const userSchema = new mongoose.Schema({
   name: { type: String, required: true, trim: true },
   email: { type: String, required: true, unique: true, lowercase: true, trim: true },
   password: { type: String, required: true, minlength: 6 },
-  plan: { type: String, enum: ['free', 'pro', 'enterprise'], default: 'free' },
+  plan: { type: String, enum: ['free', 'basic', 'pro'], default: 'free' },
   analysesCount: { type: Number, default: 0 },
   analysesLimit: { type: Number, default: 10 },
+  paymentId: { type: String, default: null },
+  planActivatedAt: { type: Date, default: null },
   createdAt: { type: Date, default: Date.now }
 });
 

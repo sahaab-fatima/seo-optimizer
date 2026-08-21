@@ -58,4 +58,28 @@ router.get('/profile', auth, async (req, res) => {
   catch (error) { res.status(500).json({ error: error.message }); }
 });
 
+// Upgrade Plan
+router.post('/upgrade', auth, async (req, res) => {
+  if (!isDbReady()) return res.status(503).json({ error: 'Database unavailable' });
+  try {
+    const { plan, paymentId } = req.body;
+    if (!plan || !['basic', 'pro'].includes(plan)) return res.status(400).json({ error: 'Invalid plan' });
+
+    const limits = { free: 10, basic: 100, pro: 99999 };
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    user.plan = plan;
+    user.analysesLimit = limits[plan] || 10;
+    user.paymentId = paymentId;
+    user.planActivatedAt = new Date();
+    await user.save();
+
+    res.json({ success: true, user });
+  } catch (error) {
+    console.error('Upgrade error:', error);
+    res.status(500).json({ error: error.message || 'Upgrade failed' });
+  }
+});
+
 module.exports = router;

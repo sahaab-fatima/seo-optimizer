@@ -13,6 +13,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link rel="stylesheet" href="/css/style.css">
     <!-- Google AdSense - Replace ca-pub-XXXXXXXXXXXXXXXX with your AdSense publisher ID -->
     <!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script> -->
@@ -202,6 +203,11 @@
                         </template>
                     </div>
                 </div>
+                <!-- Download PDF Button -->
+                <button type="button" @click="downloadPDF()" class="w-full mt-4 px-6 py-3 bg-gradient-to-r from-emerald-500 to-indigo-500 hover:from-emerald-600 hover:to-indigo-600 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all text-sm">
+                    <i data-lucide="download" class="w-4 h-4"></i>
+                    Download SEO Report (PDF)
+                </button>
             </div>
         </div>
 
@@ -302,6 +308,7 @@
     <footer class="fixed bottom-0 left-0 right-0 bg-slate-900/80 backdrop-blur-lg border-t border-slate-700/50 py-2.5 sm:py-3">
         <div class="max-w-7xl mx-auto px-3 sm:px-4 text-center">
             <div class="flex flex-wrap justify-center gap-3 sm:gap-4 mb-1.5 sm:mb-2">
+                <a href="/pricing.html" class="text-slate-500 hover:text-slate-300 text-[10px] sm:text-xs transition-all">Pricing</a>
                 <a href="/about.html" class="text-slate-500 hover:text-slate-300 text-[10px] sm:text-xs transition-all">About</a>
                 <a href="/contact.html" class="text-slate-500 hover:text-slate-300 text-[10px] sm:text-xs transition-all">Contact</a>
                 <a href="/privacy.html" class="text-slate-500 hover:text-slate-300 text-[10px] sm:text-xs transition-all">Privacy Policy</a>

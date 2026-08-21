@@ -670,6 +670,99 @@ function seoApp() {
 
       html += '</div>';
       return html;
+    },
+
+    downloadPDF() {
+      if (!this.analysisResult) return;
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const r = this.analysisResult;
+      let y = 20;
+
+      doc.setFontSize(22);
+      doc.setTextColor(99, 102, 241);
+      doc.text('SEOBoost - SEO Report', 20, y);
+      y += 10;
+
+      doc.setFontSize(10);
+      doc.setTextColor(100);
+      doc.text('Generated: ' + new Date().toLocaleDateString(), 20, y);
+      y += 6;
+      doc.text('URL: ' + (r.url || 'N/A'), 20, y);
+      y += 10;
+
+      doc.setDrawColor(99, 102, 241);
+      doc.line(20, y, 190, y);
+      y += 10;
+
+      doc.setFontSize(16);
+      doc.setTextColor(0);
+      doc.text('Overall Score: ' + r.score + ' / 100', 20, y);
+      y += 10;
+
+      doc.setFontSize(12);
+      doc.setTextColor(60);
+      doc.text('Statistics', 20, y);
+      y += 8;
+      doc.setFontSize(10);
+      const stats = [
+        ['Title Length', r.stats.titleLength],
+        ['Meta Description Length', r.stats.metaDescLength],
+        ['Word Count', r.stats.wordCount],
+        ['H1 Tags', r.stats.h1Count],
+        ['Images', r.stats.imageCount],
+        ['Links', r.stats.linkCount],
+      ];
+      stats.forEach(([label, val]) => {
+        doc.text(label + ': ' + val, 25, y);
+        y += 6;
+      });
+      y += 4;
+
+      if (r.passed && r.passed.length > 0) {
+        doc.setFontSize(12);
+        doc.setTextColor(16, 185, 129);
+        doc.text('Passed Checks (' + r.passed.length + ')', 20, y);
+        y += 8;
+        doc.setFontSize(9);
+        doc.setTextColor(60);
+        r.passed.forEach(c => {
+          if (y > 270) { doc.addPage(); y = 20; }
+          doc.text('[PASS] ' + c, 25, y);
+          y += 5;
+        });
+        y += 4;
+      }
+
+      if (r.issues && r.issues.length > 0) {
+        doc.setFontSize(12);
+        doc.setTextColor(220, 38, 38);
+        doc.text('Issues Found (' + r.issues.length + ')', 20, y);
+        y += 8;
+        doc.setFontSize(9);
+        r.issues.forEach(issue => {
+          if (y > 270) { doc.addPage(); y = 20; }
+          const icon = issue.type === 'error' ? '[ERROR]' : issue.type === 'warning' ? '[WARN]' : '[INFO]';
+          doc.setTextColor(issue.type === 'error' ? 220 : issue.type === 'warning' ? 200 : 50, issue.type === 'error' ? 38 : issue.type === 'warning' ? 150 : 100, issue.type === 'error' ? 38 : 30);
+          doc.text(icon + ' ' + issue.category + ' - ' + issue.message, 25, y);
+          y += 5;
+          doc.setTextColor(100);
+          const suggestion = doc.splitTextToSize('Fix: ' + issue.suggestion, 160);
+          suggestion.forEach(line => { doc.text(line, 30, y); y += 4; });
+          y += 2;
+        });
+      }
+
+      const pageCount = doc.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setTextColor(150);
+        doc.text('SEOBoost Report | Page ' + i + ' of ' + pageCount, 105, 290, { align: 'center' });
+      }
+
+      const host = r.url ? new URL(r.url).hostname.replace('www.', '') : 'website';
+      doc.save('SEO-Report-' + host + '.pdf');
     }
   };
 }
