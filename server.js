@@ -16,22 +16,47 @@ const PORT = process.env.PORT || 5000;
 // Middleware
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
-app.use(express.static(path.join(__dirname, 'public')));
 
-// MongoDB Connection (with timeout and graceful fallback)
+// MongoDB Connection
 let dbConnected = false;
-mongoose.connect(process.env.MONGODB_URI, {
-  serverSelectionTimeoutMS: 5000,
-  socketTimeoutMS: 5000,
-  connectTimeoutMS: 5000
-})
-  .then(() => { dbConnected = true; console.log('Connected to MongoDB Atlas'); })
-  .catch(err => { dbConnected = false; console.log('MongoDB unavailable - running without database. History and auth disabled.'); });
+const MONGODB_URI = process.env.MONGODB_URI;
+
+function connectDB() {
+  if (dbConnected) return Promise.resolve();
+  if (!MONGODB_URI) {
+    console.log('No MONGODB_URI found - running without database');
+    return Promise.resolve();
+  }
+  return mongoose.connect(MONGODB_URI, {
+    serverSelectionTimeoutMS: 8000,
+    socketTimeoutMS: 8000,
+    connectTimeoutMS: 8000
+  }).then(() => {
+    dbConnected = true;
+    console.log('Connected to MongoDB Atlas');
+  }).catch(err => {
+    dbConnected = false;
+    console.log('MongoDB connection failed:', err.message);
+  });
+}
+
+// Connect on startup
+connectDB();
 
 // Make db status available to routes
-app.get('/api/health', (req, res) => {
+app.get('/api/health', async (req, res) => {
+  await connectDB();
   res.json({ status: 'ok', db: dbConnected, timestamp: new Date().toISOString() });
 });
+
+// Ensure DB connection before API routes
+app.use('/api', async (req, res, next) => {
+  await connectDB();
+  next();
+});
+
+// Serve static files from public directory
+app.use(express.static(path.join(__dirname, 'public')));
 
 // API Routes
 app.use('/api/auth', authRoutes);
@@ -51,6 +76,12 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Something went wrong!' });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+// For local development
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+  });
+}
+
+// Export for Vercel serverless
+module.exports = app;
