@@ -1,35 +1,47 @@
 const express = require('express');
 const router = express.Router();
-const Analysis = require('../models/Analysis');
-const Content = require('../models/Content');
-const Keyword = require('../models/Keyword');
-const auth = require('../middleware/auth');
+const jwt = require('jsonwebtoken');
+const { pool } = require('../db');
 
-function isDbReady() {
-  return require('mongoose').connection.readyState === 1;
+const JWT_SECRET = process.env.JWT_SECRET || 'seo-boost-secret-key-2024';
+
+function getUserId(req) {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return null;
+    const token = authHeader.replace('Bearer ', '');
+    const decoded = jwt.verify(token, JWT_SECRET);
+    return decoded.userId;
+  } catch { return null; }
 }
 
-router.get('/analyses', auth, async (req, res) => {
-  if (!isDbReady()) return res.json({ success: true, data: [] });
+// Get analyses history
+router.get('/analyses', async (req, res) => {
   try {
-    const data = await Analysis.find({ userId: req.userId }).sort({ createdAt: -1 }).limit(20);
-    res.json({ success: true, data });
+    const userId = getUserId(req);
+    if (!userId) return res.json({ success: true, data: [] });
+    const result = await pool.query('SELECT * FROM analyses WHERE user_id = $1 ORDER BY created_at DESC LIMIT 50', [userId]);
+    res.json({ success: true, data: result.rows });
   } catch (error) { res.status(500).json({ error: error.message }); }
 });
 
-router.get('/contents', auth, async (req, res) => {
-  if (!isDbReady()) return res.json({ success: true, data: [] });
+// Get contents history
+router.get('/contents', async (req, res) => {
   try {
-    const data = await Content.find({ userId: req.userId }).sort({ createdAt: -1 }).limit(20);
-    res.json({ success: true, data });
+    const userId = getUserId(req);
+    if (!userId) return res.json({ success: true, data: [] });
+    const result = await pool.query('SELECT * FROM contents WHERE user_id = $1 ORDER BY created_at DESC LIMIT 50', [userId]);
+    res.json({ success: true, data: result.rows });
   } catch (error) { res.status(500).json({ error: error.message }); }
 });
 
-router.get('/keywords', auth, async (req, res) => {
-  if (!isDbReady()) return res.json({ success: true, data: [] });
+// Get keywords history
+router.get('/keywords', async (req, res) => {
   try {
-    const data = await Keyword.find({ userId: req.userId }).sort({ createdAt: -1 }).limit(20);
-    res.json({ success: true, data });
+    const userId = getUserId(req);
+    if (!userId) return res.json({ success: true, data: [] });
+    const result = await pool.query('SELECT * FROM keywords WHERE user_id = $1 ORDER BY created_at DESC LIMIT 50', [userId]);
+    res.json({ success: true, data: result.rows });
   } catch (error) { res.status(500).json({ error: error.message }); }
 });
 

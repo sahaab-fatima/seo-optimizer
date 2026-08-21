@@ -1,9 +1,7 @@
 const express = require('express');
 const router = express.Router();
-
-function isDbReady() {
-  return require('mongoose').connection.readyState === 1;
-}
+const jwt = require('jsonwebtoken');
+const { pool } = require('../db');
 
 router.post('/', async (req, res) => {
   try {
@@ -37,21 +35,20 @@ router.post('/', async (req, res) => {
     const jsonMatch = responseText.match(/\{[\s\S]*\}/);
     if (jsonMatch) { result = JSON.parse(jsonMatch[0]); } else { result = { raw: responseText }; }
 
-    // Save if DB available
-    if (isDbReady()) {
-      try {
-        let userId = null;
-        const token = req.header('Authorization')?.replace('Bearer ', '');
-        if (token) {
-          const jwt = require('jsonwebtoken');
-          const decoded = jwt.verify(token, process.env.JWT_SECRET || 'seo-boost-secret-key-2024');
-          userId = decoded.userId;
-        }
-        const Content = require('../models/Content');
-        const saved = new Content({ originalContent: content.substring(0, 500), type, result, userId });
-        await saved.save();
-      } catch {}
-    }
+    try {
+      let userId = null;
+      const token = req.header('Authorization')?.replace('Bearer ', '');
+      if (token) {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'seo-boost-secret-key-2024');
+        userId = decoded.userId;
+      }
+      if (userId) {
+        await pool.query(
+          'INSERT INTO contents (user_id, original_text, result) VALUES ($1, $2, $3)',
+          [userId, content.substring(0, 500), JSON.stringify(result)]
+        );
+      }
+    } catch (e) { console.log('Save to DB failed:', e.message); }
 
     res.json({ success: true, data: result });
   } catch (error) {
