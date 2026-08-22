@@ -1,5 +1,6 @@
 function analyzeSEO(data) {
   const issues = [];
+  const passed = [];
   let score = 100;
 
   if (!data.title) {
@@ -11,6 +12,8 @@ function analyzeSEO(data) {
   } else if (data.title.length > 60) {
     issues.push({ type: 'warning', category: 'Title', message: `Title is too long (${data.title.length} characters)`, suggestion: 'Keep title under 60 characters' });
     score -= 5;
+  } else {
+    passed.push('Title tag present and optimal length');
   }
 
   if (!data.metaDescription) {
@@ -22,6 +25,8 @@ function analyzeSEO(data) {
   } else if (data.metaDescription.length > 160) {
     issues.push({ type: 'warning', category: 'Meta Description', message: `Meta description is too long (${data.metaDescription.length} characters)`, suggestion: 'Keep under 160 characters' });
     score -= 5;
+  } else {
+    passed.push('Meta description present and optimal length');
   }
 
   if (data.h1.length === 0) {
@@ -30,9 +35,13 @@ function analyzeSEO(data) {
   } else if (data.h1.length > 1) {
     issues.push({ type: 'warning', category: 'Headings', message: `Multiple H1 tags found (${data.h1.length})`, suggestion: 'Use only one H1 tag per page' });
     score -= 5;
+  } else {
+    passed.push('H1 tag present and correct');
   }
 
-  if (data.h2.length === 0 && data.h1.length > 0) {
+  if (data.h2.length > 0) {
+    passed.push('H2 headings structure found');
+  } else if (data.h1.length > 0) {
     issues.push({ type: 'info', category: 'Headings', message: 'No H2 tags found', suggestion: 'Add H2 tags to organize content into sections' });
     score -= 3;
   }
@@ -41,26 +50,56 @@ function analyzeSEO(data) {
   if (imagesWithoutAlt > 0) {
     issues.push({ type: 'warning', category: 'Images', message: `${imagesWithoutAlt} image(s) missing alt text`, suggestion: 'Add descriptive alt text to all images' });
     score -= Math.min(imagesWithoutAlt * 2, 10);
+  } else if (data.images.length > 0) {
+    passed.push('All images have alt text');
   }
 
-  if (!data.ogTitle) {
+  if (data.ogTitle) {
+    passed.push('Open Graph title tag present');
+  } else {
     issues.push({ type: 'info', category: 'Social', message: 'Missing Open Graph title', suggestion: 'Add og:title meta tag for better social sharing' });
     score -= 2;
   }
 
-  if (!data.ogDescription) {
+  if (data.ogDescription) {
+    passed.push('Open Graph description tag present');
+  } else {
     issues.push({ type: 'info', category: 'Social', message: 'Missing Open Graph description', suggestion: 'Add og:description meta tag for social previews' });
     score -= 2;
   }
 
-  if (!data.canonical) {
+  if (data.canonical) {
+    passed.push('Canonical URL is set');
+  } else {
     issues.push({ type: 'info', category: 'Technical', message: 'No canonical URL set', suggestion: 'Add a canonical link tag to prevent duplicate content issues' });
     score -= 3;
   }
 
-  if (data.wordCount < 300) {
+  if (data.wordCount >= 300) {
+    passed.push('Content has sufficient word count (' + data.wordCount + ' words)');
+  } else {
     issues.push({ type: 'warning', category: 'Content', message: `Low word count (${data.wordCount} words)`, suggestion: 'Aim for at least 300 words for meaningful content' });
     score -= 5;
+  }
+
+  if (data.url && data.url.startsWith('https:')) {
+    passed.push('HTTPS enabled');
+  }
+
+  if (data.links.length > 0) {
+    passed.push('Links are present (' + data.links.length + ' found)');
+  }
+
+  if (data.images.length > 0) {
+    passed.push('Images are present (' + data.images.length + ' found)');
+  }
+
+  if (data.title && data.title.length >= 30 && data.title.length <= 60) {
+    passed.push('Title length is optimal');
+  }
+
+  if (data.metaDescription && data.metaDescription.length >= 120 && data.metaDescription.length <= 160) {
+    passed.push('Meta description length is optimal');
   }
 
   const recommendations = [];
@@ -74,6 +113,7 @@ function analyzeSEO(data) {
     url: data.url,
     score,
     issues,
+    passed,
     stats: {
       titleLength: data.title.length,
       metaDescLength: data.metaDescription.length,
