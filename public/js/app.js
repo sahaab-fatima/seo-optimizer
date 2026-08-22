@@ -613,8 +613,33 @@ function seoApp() {
       try {
         const res = await fetch(`/api/pagespeed?url=${encodeURIComponent(this.urlInput)}`);
         const data = await res.json();
-        if (data.success) this.pageSpeedResult = data.data;
-        else this.error = data.error;
+        if (data.success) {
+          var d = data.data;
+          var scoreArr = [];
+          var labels = { performance: 'Performance', accessibility: 'Accessibility', 'best-practices': 'Best Practices', seo: 'SEO' };
+          if (d.scores) {
+            Object.keys(d.scores).forEach(function(k) {
+              scoreArr.push({ score: d.scores[k], label: labels[k] || k });
+            });
+          }
+          var metricArr = [];
+          if (d.metrics) {
+            Object.keys(d.metrics).forEach(function(k) {
+              var name = k.replace(/([A-Z])/g, ' $1').replace(/^./, function(s){ return s.toUpperCase(); });
+              metricArr.push({ name: name, value: d.metrics[k] });
+            });
+          }
+          if (d.basic) {
+            metricArr.push({ name: 'Page Load Time', value: d.basic.loadTime });
+            metricArr.push({ name: 'Page Size', value: d.basic.pageSize });
+            metricArr.push({ name: 'Images Found', value: d.basic.images });
+            metricArr.push({ name: 'Scripts Found', value: d.basic.scripts });
+            metricArr.push({ name: 'HTTPS', value: d.basic.hasHttps ? 'Yes' : 'No' });
+            metricArr.push({ name: 'Mobile Viewport', value: d.basic.hasViewport ? 'Yes' : 'No' });
+            metricArr.push({ name: 'Gzip Compression', value: d.basic.hasGzip ? 'Yes' : 'No' });
+          }
+          this.pageSpeedResult = { scores: scoreArr, metrics: metricArr };
+        } else { this.error = data.error; }
       } catch (e) { this.error = 'Failed to test page speed'; }
       this.isLoading = false;
     },
