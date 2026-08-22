@@ -71,28 +71,4 @@ router.get('/profile', async (req, res) => {
   } catch (error) { res.status(500).json({ error: error.message }); }
 });
 
-// Upgrade Plan
-router.post('/upgrade', async (req, res) => {
-  try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader) return res.status(401).json({ error: 'No token' });
-    const token = authHeader.replace('Bearer ', '');
-    const decoded = jwt.verify(token, JWT_SECRET);
-    const { plan, paymentId } = req.body;
-    if (!plan || !['basic', 'pro'].includes(plan)) return res.status(400).json({ error: 'Invalid plan' });
-
-    const limits = { free: 10, basic: 100, pro: 99999 };
-    const result = await pool.query(
-      'UPDATE users SET plan = $1, analyses_limit = $2, payment_id = $3, plan_activated_at = NOW() WHERE id = $4 RETURNING id, name, email, plan, analyses_count, analyses_limit',
-      [plan, limits[plan], paymentId, decoded.userId]
-    );
-
-    const u = result.rows[0];
-    res.json({ success: true, user: { ...u, analysesCount: u.analyses_count, analysesLimit: u.analyses_limit } });
-  } catch (error) {
-    console.error('Upgrade error:', error);
-    res.status(500).json({ error: error.message || 'Upgrade failed' });
-  }
-});
-
 module.exports = router;
