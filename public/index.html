@@ -123,11 +123,7 @@
                     <h3 class="text-lg sm:text-xl font-semibold mb-2">PageSpeed Test</h3>
                     <p class="text-slate-400 text-sm">Test your website loading speed and performance scores.</p>
                 </div>
-                <div class="card-hover bg-slate-800/50 rounded-2xl border border-slate-700/50 p-5 sm:p-6 cursor-pointer" @click="currentTab='backlinks'">
-                    <div class="w-10 h-10 sm:w-12 sm:h-12 bg-purple-500/20 rounded-xl flex items-center justify-center mb-3 sm:mb-4"><i data-lucide="link" class="w-5 h-5 sm:w-6 sm:h-6 text-purple-400"></i></div>
-                    <h3 class="text-lg sm:text-xl font-semibold mb-2">Backlink Checker</h3>
-                    <p class="text-slate-400 text-sm">Analyze backlinks pointing to your website.</p>
-                </div>
+
                 <div class="card-hover bg-slate-800/50 rounded-2xl border border-slate-700/50 p-5 sm:p-6 cursor-pointer" @click="currentTab='serp'">
                     <div class="w-10 h-10 sm:w-12 sm:h-12 bg-cyan-500/20 rounded-xl flex items-center justify-center mb-3 sm:mb-4"><i data-lucide="eye" class="w-5 h-5 sm:w-6 sm:h-6 text-cyan-400"></i></div>
                     <h3 class="text-lg sm:text-xl font-semibold mb-2">SERP Preview</h3>
@@ -183,7 +179,7 @@
                     <li class="flex items-start gap-2"><span class="text-emerald-400 mt-1">•</span> <span><strong class="text-white">Content Optimizer:</strong> Paste your content and receive AI-powered suggestions for improvement. Generate optimized meta tags, rewrite content for better engagement, and boost readability scores.</span></li>
                     <li class="flex items-start gap-2"><span class="text-amber-400 mt-1">•</span> <span><strong class="text-white">Keyword Research:</strong> Discover high-performing keywords with difficulty ratings and search volume estimates. Find the best keywords to target for your niche.</span></li>
                     <li class="flex items-start gap-2"><span class="text-red-400 mt-1">•</span> <span><strong class="text-white">PageSpeed Test:</strong> Test your website loading speed and performance. Get scores for Performance, Accessibility, Best Practices, and SEO with detailed metrics.</span></li>
-                    <li class="flex items-start gap-2"><span class="text-purple-400 mt-1">•</span> <span><strong class="text-white">Backlink Checker:</strong> Analyze backlinks pointing to your website. See total backlink count, referring domains, and source URLs.</span></li>
+
                     <li class="flex items-start gap-2"><span class="text-cyan-400 mt-1">•</span> <span><strong class="text-white">SERP Preview:</strong> Preview how your page appears in Google search results. Optimize title and description length for maximum click-through rate.</span></li>
                     <li class="flex items-start gap-2"><span class="text-orange-400 mt-1">•</span> <span><strong class="text-white">Schema Generator:</strong> Generate structured data markup (JSON-LD) for Articles, Products, FAQs, and Local Businesses to enhance search result visibility.</span></li>
                     <li class="flex items-start gap-2"><span class="text-teal-400 mt-1">•</span> <span><strong class="text-white">Readability Score:</strong> Check content readability with Flesch scoring, grade level analysis, word count, sentence statistics, and readability recommendations.</span></li>
@@ -347,45 +343,7 @@
             </div>
         </div>
 
-        <!-- BACKLINKS -->
-        <div x-show="currentTab==='backlinks'" x-cloak class="view-enter">
-            <div class="bg-slate-800/50 rounded-2xl border border-slate-700/50 p-4 sm:p-6 mb-4 sm:mb-6">
-                <h2 class="text-lg sm:text-xl font-semibold text-white mb-3 sm:mb-4">Backlink Checker</h2>
-                <div class="flex flex-col sm:flex-row gap-3">
-                    <input type="text" x-model="urlInput" placeholder="Enter URL (e.g., https://example.com)" class="flex-1 px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
-                    <button type="button" @click="checkBacklinks()" :disabled="isLoading" class="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl font-semibold btn-glow flex items-center justify-center gap-2 disabled:opacity-50 text-sm whitespace-nowrap">
-                        <i x-show="!isLoading" data-lucide="link" class="w-4 h-4 sm:w-5 sm:h-5"></i>
-                        <i x-show="isLoading" data-lucide="loader-2" class="w-4 h-4 sm:w-5 sm:h-5 spinner"></i>
-                        <span x-text="isLoading ? 'Checking...' : 'Check Backlinks'"></span>
-                    </button>
-                </div>
-                <div x-show="error" x-cloak class="bg-red-500/20 border border-red-500/50 rounded-xl p-3 sm:p-4 mt-4"><p class="text-red-400 text-sm" x-text="error"></p></div>
-            </div>
-            <div x-show="backlinkResult" x-cloak class="space-y-4 sm:space-y-6 view-enter">
-                <div class="bg-slate-800/50 rounded-2xl border border-slate-700/50 p-4 sm:p-6">
-                    <div class="flex items-center gap-3 mb-4">
-                        <span class="text-2xl sm:text-3xl font-bold text-white" x-text="backlinkResult?.total || 0"></span>
-                        <span class="text-slate-400 text-sm">backlinks found</span>
-                    </div>
-                </div>
-                <div class="bg-slate-800/50 rounded-2xl border border-slate-700/50 p-4 sm:p-6">
-                    <h3 class="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4">Backlinks</h3>
-                    <div class="space-y-2 sm:space-y-3">
-                        <template x-for="(link, idx) in backlinkResult?.backlinks || []" :key="idx">
-                            <div class="p-3 sm:p-4 rounded-xl bg-slate-900/50 border border-slate-700/50">
-                                <div class="flex items-start gap-2 sm:gap-3">
-                                    <i data-lucide="external-link" class="w-4 h-4 sm:w-5 sm:h-5 mt-0.5 shrink-0 text-purple-400"></i>
-                                    <div class="min-w-0">
-                                        <p class="text-white font-medium text-sm" x-text="link.domain"></p>
-                                        <p class="text-slate-400 text-xs sm:text-sm mt-1" x-text="link.source"></p>
-                                    </div>
-                                </div>
-                            </div>
-                        </template>
-                    </div>
-                </div>
-            </div>
-        </div>
+
 
         <!-- SERP PREVIEW -->
         <div x-show="currentTab==='serp'" x-cloak class="view-enter">

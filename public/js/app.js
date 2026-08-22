@@ -12,7 +12,7 @@ function seoApp() {
     contentResult: null,
     keywordResult: null,
     pageSpeedResult: null,
-    backlinkResult: null,
+
     serpTitle: '',
     serpDesc: '',
     serpUrl: '',
@@ -45,7 +45,7 @@ function seoApp() {
       this.$watch('contentResult', () => { this.$nextTick(() => { lucide.createIcons() }) });
       this.$watch('keywordResult', () => { this.$nextTick(() => { lucide.createIcons() }) });
       this.$watch('pageSpeedResult', () => { this.$nextTick(() => { lucide.createIcons() }) });
-      this.$watch('backlinkResult', () => { this.$nextTick(() => { lucide.createIcons() }) });
+
       this.$watch('readabilityResult', () => { this.$nextTick(() => { lucide.createIcons() }) });
       this.$watch('isLoading', () => { this.$nextTick(() => { lucide.createIcons() }) });
       this.$watch('error', () => { this.$nextTick(() => { lucide.createIcons() }) });
@@ -103,7 +103,6 @@ function seoApp() {
       this.contentResult = null;
       this.keywordResult = null;
       this.pageSpeedResult = null;
-      this.backlinkResult = null;
       this.readabilityResult = null;
       this.generatedSchema = '';
       this.error = '';
@@ -644,17 +643,7 @@ function seoApp() {
       this.isLoading = false;
     },
 
-    async checkBacklinks() {
-      if (!this.urlInput) return;
-      this.isLoading = true; this.error = ''; this.backlinkResult = null;
-      try {
-        const res = await fetch(`/api/backlinks?url=${encodeURIComponent(this.urlInput)}`);
-        const data = await res.json();
-        if (data.success) this.backlinkResult = data.data;
-        else this.error = data.error;
-      } catch (e) { this.error = 'Failed to check backlinks'; }
-      this.isLoading = false;
-    },
+
 
     generateSchema() {
       let schema = {};

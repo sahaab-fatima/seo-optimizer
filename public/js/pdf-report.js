@@ -227,7 +227,7 @@ function downloadPDF() {
   doc.setFontSize(9); doc.setTextColor(60);
   var shortTerm = [
     'Add 300+ words of quality content',
-    'Build quality backlinks from relevant sites',
+    'Improve domain authority with quality content',
     'Optimize all images with descriptive alt text'
   ];
   shortTerm.forEach(function(item) {
