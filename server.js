@@ -9,6 +9,7 @@ const analyzeRoutes = require('./server/routes/analyze');
 const optimizeRoutes = require('./server/routes/optimize');
 const keywordsRoutes = require('./server/routes/keywords');
 const historyRoutes = require('./server/routes/history');
+const contactRoutes = require('./server/routes/contact');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -48,6 +49,7 @@ app.use('/api/analyze', analyzeRoutes);
 app.use('/api/optimize', optimizeRoutes);
 app.use('/api/keywords', keywordsRoutes);
 app.use('/api/history', historyRoutes);
+app.use('/api/contact', contactRoutes);
 
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));

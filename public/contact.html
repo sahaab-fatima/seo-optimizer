@@ -30,31 +30,62 @@
         <div class="bg-slate-800/50 rounded-2xl border border-slate-700/50 p-5 sm:p-8 mb-6 sm:mb-8">
             <p class="text-slate-300 mb-5 sm:mb-6 text-sm sm:text-base">Have questions, suggestions, or need support? We'd love to hear from you. Fill out the form below and we'll get back to you as soon as possible.</p>
 
-            <form action="https://formspree.io/f/your_form_id" method="POST" class="space-y-4 sm:space-y-6">
+            <form id="contactForm" class="space-y-4 sm:space-y-6">
                 <div>
                     <label class="block text-xs sm:text-sm font-medium text-slate-400 mb-1.5 sm:mb-2">Your Name</label>
-                    <input type="text" name="name" required class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" placeholder="Enter your name">
+                    <input type="text" id="contactName" required class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" placeholder="Enter your name">
                 </div>
                 <div>
                     <label class="block text-xs sm:text-sm font-medium text-slate-400 mb-1.5 sm:mb-2">Your Email</label>
-                    <input type="email" name="email" required class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" placeholder="Enter your email">
+                    <input type="email" id="contactEmail" required class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" placeholder="Enter your email">
                 </div>
                 <div>
                     <label class="block text-xs sm:text-sm font-medium text-slate-400 mb-1.5 sm:mb-2">Subject</label>
-                    <input type="text" name="subject" required class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" placeholder="What is this about?">
+                    <input type="text" id="contactSubject" class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" placeholder="What is this about?">
                 </div>
                 <div>
                     <label class="block text-xs sm:text-sm font-medium text-slate-400 mb-1.5 sm:mb-2">Message</label>
-                    <textarea name="message" rows="4" required class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none text-sm" placeholder="Write your message here..."></textarea>
+                    <textarea id="contactMessage" rows="4" required class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none text-sm" placeholder="Write your message here..."></textarea>
                 </div>
+                <div id="contactMsg" class="hidden text-sm rounded-xl p-3"></div>
                 <button type="submit" class="w-full px-6 py-3 bg-gradient-to-r from-indigo-500 to-emerald-500 hover:from-indigo-600 hover:to-emerald-600 rounded-xl font-semibold transition-all text-sm">Send Message</button>
             </form>
+            <script>
+            document.getElementById('contactForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const btn = e.target.querySelector('button[type="submit"]');
+                const msg = document.getElementById('contactMsg');
+                btn.disabled = true; btn.textContent = 'Sending...';
+                try {
+                    const res = await fetch('/api/contact', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            name: document.getElementById('contactName').value,
+                            email: document.getElementById('contactEmail').value,
+                            subject: document.getElementById('contactSubject').value,
+                            message: document.getElementById('contactMessage').value
+                        })
+                    });
+                    const data = await res.json();
+                    msg.className = 'text-sm rounded-xl p-3 bg-emerald-500/20 border border-emerald-500/30 text-emerald-400';
+                    msg.textContent = data.message || 'Message sent!';
+                    msg.classList.remove('hidden');
+                    e.target.reset();
+                } catch (err) {
+                    msg.className = 'text-sm rounded-xl p-3 bg-red-500/20 border border-red-500/30 text-red-400';
+                    msg.textContent = 'Failed to send. Try again.';
+                    msg.classList.remove('hidden');
+                }
+                btn.disabled = false; btn.textContent = 'Send Message';
+            });
+            </script>
         </div>
 
         <div class="bg-slate-800/50 rounded-2xl border border-slate-700/50 p-5 sm:p-8">
             <h2 class="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">Other Ways to Reach Us</h2>
             <div class="space-y-3 sm:space-y-4 text-slate-300 text-sm sm:text-base">
-                <p><span class="text-indigo-400 font-medium">Email:</span> support@seoboost.app</p>
+                <p><span class="text-indigo-400 font-medium">Email:</span> sahaabfatima17@gmail.com</p>
                 <p><span class="text-indigo-400 font-medium">Response Time:</span> Within 24-48 hours</p>
                 <p><span class="text-indigo-400 font-medium">GitHub:</span> <a href="https://github.com/sahaab-fatima/seo-optimizer" target="_blank" class="text-emerald-400 hover:underline">github.com/sahaab-fatima/seo-optimizer</a></p>
             </div>
