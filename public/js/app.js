@@ -11,6 +11,17 @@ function seoApp() {
     analysisResult: null,
     contentResult: null,
     keywordResult: null,
+    pageSpeedResult: null,
+    backlinkResult: null,
+    serpTitle: '',
+    serpDesc: '',
+    serpUrl: '',
+    schemaType: 'article',
+    schemaData: {},
+    generatedSchema: '',
+    readabilityResult: null,
+    readabilityInput: '',
+    faqItems: [{q:'',a:''}],
     history: [],
     // Auth
     user: null,
@@ -33,6 +44,9 @@ function seoApp() {
       this.$watch('analysisResult', () => { this.$nextTick(() => { lucide.createIcons() }) });
       this.$watch('contentResult', () => { this.$nextTick(() => { lucide.createIcons() }) });
       this.$watch('keywordResult', () => { this.$nextTick(() => { lucide.createIcons() }) });
+      this.$watch('pageSpeedResult', () => { this.$nextTick(() => { lucide.createIcons() }) });
+      this.$watch('backlinkResult', () => { this.$nextTick(() => { lucide.createIcons() }) });
+      this.$watch('readabilityResult', () => { this.$nextTick(() => { lucide.createIcons() }) });
       this.$watch('isLoading', () => { this.$nextTick(() => { lucide.createIcons() }) });
       this.$watch('error', () => { this.$nextTick(() => { lucide.createIcons() }) });
       this.$watch('showAuthModal', () => { this.$nextTick(() => { lucide.createIcons() }) });
@@ -88,6 +102,10 @@ function seoApp() {
       this.analysisResult = null;
       this.contentResult = null;
       this.keywordResult = null;
+      this.pageSpeedResult = null;
+      this.backlinkResult = null;
+      this.readabilityResult = null;
+      this.generatedSchema = '';
       this.error = '';
     },
 
@@ -587,6 +605,72 @@ function seoApp() {
 
       this.isLoading = false;
       this.$nextTick(() => { lucide.createIcons() });
+    },
+
+    async checkPageSpeed() {
+      if (!this.urlInput) return;
+      this.isLoading = true; this.error = ''; this.pageSpeedResult = null;
+      try {
+        const res = await fetch(`/api/pagespeed?url=${encodeURIComponent(this.urlInput)}`);
+        const data = await res.json();
+        if (data.success) this.pageSpeedResult = data.data;
+        else this.error = data.error;
+      } catch (e) { this.error = 'Failed to test page speed'; }
+      this.isLoading = false;
+    },
+
+    async checkBacklinks() {
+      if (!this.urlInput) return;
+      this.isLoading = true; this.error = ''; this.backlinkResult = null;
+      try {
+        const res = await fetch(`/api/backlinks?url=${encodeURIComponent(this.urlInput)}`);
+        const data = await res.json();
+        if (data.success) this.backlinkResult = data.data;
+        else this.error = data.error;
+      } catch (e) { this.error = 'Failed to check backlinks'; }
+      this.isLoading = false;
+    },
+
+    generateSchema() {
+      let schema = {};
+      if (this.schemaType === 'article') {
+        schema = { "@context": "https://schema.org", "@type": "Article", "headline": this.schemaData.headline || "", "author": { "@type": "Person", "name": this.schemaData.author || "" }, "datePublished": this.schemaData.datePublished || "", "description": this.schemaData.description || "" };
+      } else if (this.schemaType === 'product') {
+        schema = { "@context": "https://schema.org", "@type": "Product", "name": this.schemaData.name || "", "description": this.schemaData.description || "", "brand": { "@type": "Brand", "name": this.schemaData.brand || "" }, "offers": { "@type": "Offer", "price": this.schemaData.price || "", "priceCurrency": "INR" } };
+      } else if (this.schemaType === 'faq') {
+        const faqs = (this.schemaData.faqs || []).filter(f => f.q && f.a);
+        schema = { "@context": "https://schema.org", "@type": "FAQPage", "mainEntity": faqs.map(f => ({ "@type": "Question", "name": f.q, "acceptedAnswer": { "@type": "Answer", "text": f.a } })) };
+      } else if (this.schemaType === 'localbusiness') {
+        schema = { "@context": "https://schema.org", "@type": "LocalBusiness", "name": this.schemaData.name || "", "address": { "@type": "PostalAddress", "streetAddress": this.schemaData.address || "" }, "telephone": this.schemaData.phone || "" };
+      }
+      this.generatedSchema = JSON.stringify(schema, null, 2);
+    },
+
+    copySchema() {
+      navigator.clipboard.writeText(this.generatedSchema);
+    },
+
+    addFaqItem() {
+      if (!this.schemaData.faqs) this.schemaData.faqs = [];
+      this.schemaData.faqs.push({q:'', a:''});
+    },
+
+    removeFaqItem(idx) {
+      if (this.schemaData.faqs && this.schemaData.faqs.length > 1) {
+        this.schemaData.faqs.splice(idx, 1);
+      }
+    },
+
+    async checkReadability() {
+      if (!this.readabilityInput) return;
+      this.isLoading = true; this.error = ''; this.readabilityResult = null;
+      try {
+        const res = await fetch('/api/readability', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: this.readabilityInput }) });
+        const data = await res.json();
+        if (data.success) this.readabilityResult = data.data;
+        else this.error = data.error;
+      } catch (e) { this.error = 'Failed to check readability'; }
+      this.isLoading = false;
     },
 
     formatContentResult() {

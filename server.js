@@ -10,6 +10,9 @@ const optimizeRoutes = require('./server/routes/optimize');
 const keywordsRoutes = require('./server/routes/keywords');
 const historyRoutes = require('./server/routes/history');
 const contactRoutes = require('./server/routes/contact');
+const pagespeedRoutes = require('./server/routes/pagespeed');
+const backlinksRoutes = require('./server/routes/backlinks');
+const readabilityRoutes = require('./server/routes/readability');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -50,6 +53,9 @@ app.use('/api/optimize', optimizeRoutes);
 app.use('/api/keywords', keywordsRoutes);
 app.use('/api/history', historyRoutes);
 app.use('/api/contact', contactRoutes);
+app.use('/api/pagespeed', pagespeedRoutes);
+app.use('/api/backlinks', backlinksRoutes);
+app.use('/api/readability', readabilityRoutes);
 
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
